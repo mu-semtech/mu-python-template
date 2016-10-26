@@ -1,7 +1,7 @@
 import flask
 import os
 import helpers
-import __builtin__
+import builtins
 from escape_helpers import sparql_escape
 from rdflib.namespace import Namespace
 
@@ -37,16 +37,16 @@ SERVICE_RESOURCE_BASE = 'http://mu.semte.ch/services/'
 ## Start Application ##
 #######################
 if __name__ == '__main__':
-    __builtin__.app = app
-    __builtin__.helpers = helpers
-    __builtin__.sparql_escape = sparql_escape
+    builtins.app = app
+    builtins.helpers = helpers
+    builtins.sparql_escape = sparql_escape
     app_file = os.environ.get('APP_ENTRYPOINT')
     f = open('ext/app/__init__.py', 'w+')
     f.close()
     f = open('/app/__init__.py', 'w+')
     f.close()
     try:
-        exec "from ext.app.%s import *" % app_file
+        exec("from ext.app.%s import *" % app_file)
     except Exception as e:
         helpers.log(str(e))
     debug = True if (os.environ.get('MODE') == "development") else False
