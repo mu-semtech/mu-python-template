@@ -1,5 +1,5 @@
-FROM python:2.7
-MAINTAINER Sam Landuydt "sam.landuydt@gmail.com"
+FROM python:3
+MAINTAINER Michaël Dierick "michael@dierick.io"
 
 ENV APP_ENTRYPOINT web
 ENV LOG_LEVEL info
@@ -13,11 +13,11 @@ ADD . /usr/src/app
 
 RUN ln -s /app /usr/src/app/ext \
      && cd /usr/src/app \
-     && pip install -r requirements.txt
+     && pip3 install -r requirements.txt
 
 ONBUILD ADD . /app/
 ONBUILD RUN cd /app/ \
-    && pip install -r requirements.txt
+    && pip3 install -r requirements.txt
 
 EXPOSE 80
 
