@@ -21,5 +21,4 @@ ONBUILD RUN cd /app/ \
 
 EXPOSE 80
 
-CMD ["touch" "touch /usr/src/app/ext/app/__init__.py"]
 CMD python web.py
