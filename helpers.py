@@ -69,7 +69,7 @@ def validate_resource_type(expected_type, data):
 
 sparqlQuery = SPARQLWrapper(os.environ.get('MU_SPARQL_ENDPOINT'), returnFormat=JSON)
 sparqlUpdate = SPARQLWrapper(os.environ.get('MU_SPARQL_UPDATEPOINT'), returnFormat=JSON)
-
+sparqlUpdate.method = 'POST'
 
 def query(the_query):
     """Execute the given SPARQL query (select/ask/construct)on the tripple store and returns the results
