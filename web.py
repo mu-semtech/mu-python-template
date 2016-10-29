@@ -41,8 +41,6 @@ if __name__ == '__main__':
     builtins.helpers = helpers
     builtins.sparql_escape = sparql_escape
     app_file = os.environ.get('APP_ENTRYPOINT')
-    f = open('ext/app/__init__.py', 'w+')
-    f.close()
     f = open('/app/__init__.py', 'w+')
     f.close()
     try:

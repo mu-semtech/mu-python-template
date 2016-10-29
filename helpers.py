@@ -2,6 +2,7 @@ import uuid
 import datetime
 import logging
 import os
+import sys
 from web import graph
 from flask import jsonify
 from rdflib.namespace import DC
@@ -21,8 +22,12 @@ log_levels = {'DEBUG': logging.DEBUG,
               'CRITICAL': logging.CRITICAL}
 log_dir = '/logs'
 if not os.path.exists(log_dir): os.makedirs(log_dir)
-logging.basicConfig(filename=log_dir+'/logs.log', level=log_levels.get(os.environ.get('LOG_LEVEL').upper()))
 thelogger = logging.getLogger('')
+thelogger.setLevel(log_levels.get(os.environ.get('LOG_LEVEL').upper()))
+fileHandler = logging.FileHandler("{0}/{1}.log".format(log_dir, 'logs'))
+thelogger.addHandler(fileHandler)
+consoleHandler = logging.StreamHandler(stream=sys.stdout)# or stderr?
+thelogger.addHandler(consoleHandler)
 
 def log(msg):
     """write a log message to the log file. Logs are written to the `/logs`
