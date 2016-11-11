@@ -17,7 +17,7 @@ RUN ln -s /app /usr/src/app/ext \
 
 ONBUILD ADD . /app/
 ONBUILD RUN cd /app/ \
-    && pip3 install -r requirements.txt
+    && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
 EXPOSE 80
 
