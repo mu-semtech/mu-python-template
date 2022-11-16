@@ -52,7 +52,7 @@ def error(msg, status=400, **kwargs):
     """Returns a Response object containing a JSONAPI compliant error response
     with the given status code (400 by default)."""
     error_obj = kwargs
-    error_obj["detail"] = msg
+    error_obj["title"] = msg
     error_obj["status"] = status
     response = jsonify({
         "errors": [error_obj]
