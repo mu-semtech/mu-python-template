@@ -144,7 +144,7 @@ def update(the_query):
 
 
 def update_modified(subject, modified=datetime.datetime.now()):
-    """Executes a SPARQL query to update the modification date of the given subject URI (string).
+    """(DEPRECATED) Executes a SPARQL query to update the modification date of the given subject URI (string).
      The default date is now."""
     query = " WITH <%s> " % MU_APPLICATION_GRAPH
     query += " DELETE {"
