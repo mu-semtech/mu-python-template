@@ -2,7 +2,17 @@ import datetime
 import re
 from warnings import warn
 
+"""
+The template provides one other helper module, being the `escape_helpers`-module. It contains functions for SPARQL query-escaping. Example import:
+```py
+from escape_helpers import *
+```
+
+Available functions:
+"""
+
 def sparql_escape_string(obj):
+    """Converts the given string to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, str):
         warn("You are escaping something that isn't a string with \
         the 'sparql_escape_string'-method. Implicit casting will occurr.")
@@ -10,6 +20,7 @@ def sparql_escape_string(obj):
     return '"""' + re.sub(r'[\\\'"]', lambda s: "\\" + s.group(0), obj) + '"""'
 
 def sparql_escape_datetime(obj):
+    """Converts the given datetime to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, datetime.datetime):
         warn("You are escaping something that isn't a datetime with \
         the 'sparql_escape_datetime'-method. Implicit casting will occurr.")
@@ -17,6 +28,7 @@ def sparql_escape_datetime(obj):
     return '"{}"^^xsd:dateTime'.format(obj.isoformat())
 
 def sparql_escape_date(obj):
+    """Converts the given date to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, datetime.date):
         warn("You are escaping something that isn't a date with \
         the 'sparql_escape_date'-method. Implicit casting will occurr.")
@@ -24,6 +36,7 @@ def sparql_escape_date(obj):
     return '"{}"^^xsd:date'.format(obj.isoformat())
 
 def sparql_escape_time(obj):
+    """Converts the given time to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, datetime.time):
         warn("You are escaping something that isn't a time with \
         the 'sparql_escape_time'-method. Implicit casting will occurr.")
@@ -31,6 +44,7 @@ def sparql_escape_time(obj):
     return '"{}"^^xsd:time'.format(obj.isoformat())
 
 def sparql_escape_int(obj):
+    """Converts the given int to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, int):
         warn("You are escaping something that isn't an int with \
         the 'sparql_escape_int'-method. Implicit casting will occurr.")
@@ -38,6 +52,7 @@ def sparql_escape_int(obj):
     return '"{}"^^xsd:integer'.format(obj)
 
 def sparql_escape_float(obj):
+    """Converts the given float to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, int):
         warn("You are escaping something that isn't a float with \
         the 'sparql_escape_float'-method. Implicit casting will occurr.")
@@ -45,6 +60,7 @@ def sparql_escape_float(obj):
     return '"{}"^^xsd:float'.format(obj)
 
 def sparql_escape_bool(obj):
+    """Converts the given bool to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, bool):
         warn("You are escaping something that isn't a bool with \
         the 'sparql_escape_bool'-method. Implicit casting will occurr.")
@@ -52,10 +68,28 @@ def sparql_escape_bool(obj):
     return '"{}"^^xsd:boolean'.format("true" if obj else "false")
 
 def sparql_escape_uri(obj):
+    """Converts the given URI to a SPARQL-safe RDF object string with the right RDF-datatype. """
     obj = str(obj)
     return '<' + re.sub(r'[\\"<>]', lambda s: "\\" + s.group(0), obj) + '>'
 
 def sparql_escape(obj):
+    """
+    Converts the given object to a SPARQL-safe RDF object string with the right RDF-datatype. 
+
+    These functions should be used especially when inserting user-input to avoid SPARQL-injection.
+    Separate functions are available for different python datatypes.
+    The `sparql_escape` function however can automatically select the right method to use, for the following Python datatypes:
+
+    - `str`
+    - `int`
+    - `float`
+    - `datetime.datetime`
+    - `datetime.date`
+    - `datetime.time`
+    - `boolean`
+
+    The `sparql_escape_uri`-function can be used for escaping URI's.
+    """
     if isinstance(obj, str):
         escaped_val = sparql_escape_string(obj)
     elif isinstance(obj, datetime.datetime):
