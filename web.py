@@ -32,6 +32,12 @@ try:
 except Exception:
     helpers.logger.exception('Exception raised when importing app code')
 
+if os.environ.get('LOG_EXCEPTIONS'):
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        helpers.logger.exception('Unhandled exception raised in route, returning 500')
+        raise e
+
 #######################
 ## Start Application ##
 #######################
