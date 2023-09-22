@@ -29,8 +29,8 @@ app_file = os.environ.get('APP_ENTRYPOINT')
 try:
     module_path = 'ext.app.{}'.format(app_file)
     import_module(module_path)
-except Exception as e:
-    helpers.log(str(e))
+except Exception:
+    helpers.logger.exception('Exception raised when importing app code')
 
 #######################
 ## Start Application ##
