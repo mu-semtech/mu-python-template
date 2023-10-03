@@ -6,7 +6,7 @@ Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.
 
 Create a `Dockerfile` which extends the `semtech/mu-python-template`-image and set a maintainer.
 ```docker
-FROM semtech/mu-python-template:2.0.0-beta.1
+FROM semtech/mu-python-template:2.0.0-beta.2
 LABEL maintainer="sam.landuydt@gmail.com"
 ```
 
@@ -51,79 +51,219 @@ example docker-compose parameters:
 ```
 
 ### Helper methods
+<a id="helpers.generate_uuid"></a>
 
-The template provides the user with several helper methods. They aim to give you a step ahead for:
+#### `generate_uuid`
 
-- logging
-- JSONAPI-compliancy
-- SPARQL querying
-
-The below helpers can be imported from the `helpers` module. For example:
-```py
-from helpers import *
-```
-Available functions:
-#### log(msg)
-
-Works exactly the same as the [logging.info](https://docs.python.org/3/library/logging.html#logging.info) method from pythons' logging module.
-Logs are written to the /logs directory in the docker container.  
-Note that the `helpers` module also exposes `logger`, which is the [logger instance](https://docs.python.org/3/library/logging.html#logger-objects) used by the template. The methods provided by this instance can be used for more fine-grained logging.
-
-#### generate_uuid()
-
-Generate a random UUID (String).
-
-#### session_id_header(request)
-
-Get the session id from the HTTP request headers.
-
-#### rewrite_url_header(request)
-
-Get the rewrite URL from the HTTP request headers.
-
-#### validate_json_api_content_type(request)
-
-Validate whether the Content-Type header contains the JSONAPI `content-type`-header. Returns a 400 otherwise.
-
-#### validate_resource_type(expected_type, data)
-
-Validate whether the type specified in the JSONAPI data is equal to the expected type. Returns a 409 otherwise.
-
-#### error(title, status=400, **kwargs)
-
-Returns a JSONAPI compliant error [Response object](https://flask.palletsprojects.com/en/1.1.x/api/#response-objects) with the given status code (default: 400). `kwargs` can be any other keys supported by [JSONAPI error objects](https://jsonapi.org/format/#error-objects).
-
-#### query(query)
-
-Executes the given SPARQL select/ask/construct query.
-
-#### update(query)
-
-Executes the given SPARQL update query.
-
-
-The template provides one other helper module, being the `escape_helpers`-module. It contains functions for SPARQL query-escaping. Example import:
-```py
-from escape_helpers import *
+```python
+def generate_uuid()
 ```
 
- Available functions:
-#### sparql_escape ; sparql_escape_{string|uri|date|datetime|time|bool|int|float}(value)
+> Generates a random unique user id (UUID) based on the host ID and current time
 
-Converts the given object to a SPARQL-safe RDF object string with the right RDF-datatype.  
-This functions should be used especially when inserting user-input to avoid SPARQL-injection.
+<a id="helpers.log"></a>
 
-Separate functions are available for different python datatypes, the `sparql_escape` function however can automatically select the right method to use, for following Python  datatypes:
+#### `log`
 
-- `str`
-- `int`
-- `float`
-- `datetime.datetime`
-- `datetime.date`
-- `datetime.time`
-- `boolean`
+```python
+def log(msg, *args, **kwargs)
+```
 
-The `sparql_escape_uri`-function can be used for escaping URI's.
+> Write a log message to the log file.
+> 
+> Works exactly the same as the logging.info (https://docs.python.org/3/library/logging.html#logging.info) method from pythons' logging module.
+> Logs are written to the /logs directory in the docker container.  
+> 
+> Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects) 
+> used by the template. The methods provided by this instance can be used for more fine-grained logging.
+
+<a id="helpers.error"></a>
+
+#### `error`
+
+```python
+def error(msg, status=400, **kwargs)
+```
+
+> Returns a Response object containing a JSONAPI compliant error response with the given status code (400 by default).
+> 
+> Response object documentation: https://flask.palletsprojects.com/en/1.1.x/api/#response-objects
+> The kwargs can be any other key supported by JSONAPI error objects: https://jsonapi.org/format/#error-objects
+
+<a id="helpers.session_id_header"></a>
+
+#### `session_id_header`
+
+```python
+def session_id_header(request)
+```
+
+> Returns the MU-SESSION-ID header from the given requests' headers
+
+<a id="helpers.rewrite_url_header"></a>
+
+#### `rewrite_url_header`
+
+```python
+def rewrite_url_header(request)
+```
+
+> Returns the X-REWRITE-URL header from the given requests' headers
+
+<a id="helpers.validate_json_api_content_type"></a>
+
+#### `validate_json_api_content_type`
+
+```python
+def validate_json_api_content_type(request)
+```
+
+> Validate whether the request contains the JSONAPI content-type header (application/vnd.api+json). Returns a 404 otherwise
+
+<a id="helpers.validate_resource_type"></a>
+
+#### `validate_resource_type`
+
+```python
+def validate_resource_type(expected_type, data)
+```
+
+> Validate whether the type specified in the JSON data is equal to the expected type. Returns a `409` otherwise.
+
+<a id="helpers.query"></a>
+
+#### `query`
+
+```python
+def query(the_query)
+```
+
+> Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default).
+
+<a id="helpers.update"></a>
+
+#### `update`
+
+```python
+def update(the_query)
+```
+
+> Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens.
+
+<a id="helpers.update_modified"></a>
+
+#### `update_modified`
+
+```python
+def update_modified(subject, modified=datetime.datetime.now())
+```
+
+> (DEPRECATED) Executes a SPARQL query to update the modification date of the given subject URI (string).
+> The default date is now.
+
+<a id="escape_helpers.sparql_escape_string"></a>
+
+#### `sparql_escape_string`
+
+```python
+def sparql_escape_string(obj)
+```
+
+> Converts the given string to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_datetime"></a>
+
+#### `sparql_escape_datetime`
+
+```python
+def sparql_escape_datetime(obj)
+```
+
+> Converts the given datetime to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_date"></a>
+
+#### `sparql_escape_date`
+
+```python
+def sparql_escape_date(obj)
+```
+
+> Converts the given date to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_time"></a>
+
+#### `sparql_escape_time`
+
+```python
+def sparql_escape_time(obj)
+```
+
+> Converts the given time to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_int"></a>
+
+#### `sparql_escape_int`
+
+```python
+def sparql_escape_int(obj)
+```
+
+> Converts the given int to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_float"></a>
+
+#### `sparql_escape_float`
+
+```python
+def sparql_escape_float(obj)
+```
+
+> Converts the given float to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_bool"></a>
+
+#### `sparql_escape_bool`
+
+```python
+def sparql_escape_bool(obj)
+```
+
+> Converts the given bool to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape_uri"></a>
+
+#### `sparql_escape_uri`
+
+```python
+def sparql_escape_uri(obj)
+```
+
+> Converts the given URI to a SPARQL-safe RDF object string with the right RDF-datatype.
+
+<a id="escape_helpers.sparql_escape"></a>
+
+#### `sparql_escape`
+
+```python
+def sparql_escape(obj)
+```
+
+> Converts the given object to a SPARQL-safe RDF object string with the right RDF-datatype. 
+> 
+> These functions should be used especially when inserting user-input to avoid SPARQL-injection.
+> Separate functions are available for different python datatypes.
+> The `sparql_escape` function however can automatically select the right method to use, for the following Python datatypes:
+> 
+> - `str`
+> - `int`
+> - `float`
+> - `datetime.datetime`
+> - `datetime.date`
+> - `datetime.time`
+> - `boolean`
+> 
+> The `sparql_escape_uri`-function can be used for escaping URI's.
 
 ### Writing SPARQL Queries
 
@@ -185,5 +325,15 @@ Since this template is based on the meinheld-gunicorn-docker image, all possible
 For hosting the app in a production setting, the template depends on [meinheld-gunicorn-docker](https://github.com/tiangolo/meinheld-gunicorn-docker). All [environment variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) used by meinheld-gunicorn can be used to configure your service as well.
 
 ## Other
+
 ### Reassigning `app`
 In regular Flask applications (e.g. those not run within this template) you are required to define `app` by using `app = Flask(__name__)` or similar. This does *not* need to be done in your web.py, as this is handled by the microservice architecture/template. Redefining this may cause `The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.` to be thrown on your routes, which can be luckily be fixed by simply removing the previously mentioned `app = ...` line.
+
+### readme.py
+To simplify documenting the helper functions, `README.py` can be used to import & render the docstrings into README.md.
+Usage:
+```python3
+python3 -m pip install pydoc-markdown
+python3 README.py
+```
+You can customise the output through the API configuration! See [README.py](README.py) && the [pydoc-markdown docs](https://niklasrosenstein.github.io/pydoc-markdown/).
