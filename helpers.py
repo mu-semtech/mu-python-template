@@ -48,12 +48,21 @@ def rewrite_url_header(request):
     return request.headers.get('X-REWRITE-URL')
 
 
-def error(msg, status=400, **kwargs):
+def error(title, status="400", detail=None, id=None, links=None, code=None, source=None, meta=None):
     """Returns a Response object containing a JSONAPI compliant error response
-    with the given status code (400 by default)."""
-    error_obj = kwargs
-    error_obj["title"] = msg
-    error_obj["status"] = status
+    with the given status code (400 by default).
+
+    See https://jsonapi.org/format/#error-objects for desired structure."""
+    error_obj = {
+        "title": title,
+        "status": status
+    }
+    if detail is not None: error_obj["detail"] = detail
+    if id is not None: error_obj["id"] = id
+    if links is not None: error_obj["links"] = links
+    if code is not None: error_obj["code"] = code
+    if source is not None: error_obj["source"] = source
+    if meta is not None: error_obj["meta"] = meta
     response = jsonify({
         "errors": [error_obj]
     })
