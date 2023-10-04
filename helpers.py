@@ -67,7 +67,7 @@ def error(msg, status=400, **kwargs):
     The kwargs can be any other key supported by JSONAPI error objects: https://jsonapi.org/format/#error-objects
     """
     error_obj = kwargs
-    error_obj["detail"] = msg
+    error_obj["title"] = msg
     error_obj["status"] = status
     response = jsonify({
         "errors": [error_obj]
