@@ -48,7 +48,7 @@ def rewrite_url_header(request):
     return request.headers.get('X-REWRITE-URL')
 
 
-def error(title, status="400", detail=None, id=None, links=None, code=None, source=None, meta=None):
+def error(title, status="400", detail=None, id=None, links=None, code=None, source=None, meta=None, **kwargs):
     """Returns a Response object containing a JSONAPI compliant error response
     with the given status code (400 by default).
 
@@ -57,6 +57,14 @@ def error(title, status="400", detail=None, id=None, links=None, code=None, sour
         "title": title,
         "status": status
     }
+
+    for key, value in kwargs.items():
+        print("[DEPRECATION] Supplying args not supported by jsonapi to error helper is deprecated and support will be removed, received {} => {}".format(key, value), flush=True)
+        error_obj[key] = value
+
+    for kwarg, values in kwargs.items():
+        print( "{} => {}".format( kwarg, values ) )
+
     if detail is not None: error_obj["detail"] = detail
     if id is not None: error_obj["id"] = id
     if links is not None: error_obj["links"] = links
