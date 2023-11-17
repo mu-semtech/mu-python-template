@@ -28,10 +28,3 @@ builtins.sparql_escape = sparql_escape
 app_file = os.environ.get('APP_ENTRYPOINT')
 module_path = 'ext.app.{}'.format(app_file)
 import_module(module_path)
-
-#######################
-## Start Application ##
-#######################
-if __name__ == '__main__':
-    debug = os.environ.get('MODE') == "development"
-    app.run(debug=debug, host='0.0.0.0', port=80)
