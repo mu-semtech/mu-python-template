@@ -26,9 +26,9 @@ RUN ln -s /app /usr/src/app/ext \
      && cd /usr/src/app \
      && pip3 install -r requirements.txt
 
-ONBUILD ADD . /app/
-ONBUILD RUN touch /app/__init__.py
+ONBUILD ADD Dockerfile requirement[s].txt /app/
 ONBUILD RUN cd /app/ \
     && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-
+ONBUILD ADD . /app/
+ONBUILD RUN touch /app/__init__.py
