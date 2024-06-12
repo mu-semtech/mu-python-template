@@ -1,6 +1,6 @@
 # Mu Python template
 
-Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3. Based on the [Flask](https://palletsprojects.com/p/flask/)-framework.
+Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.8. Based on the [Flask](https://palletsprojects.com/p/flask/)-framework.
 
 ## Quickstart
 
