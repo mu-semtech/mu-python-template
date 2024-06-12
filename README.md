@@ -7,7 +7,7 @@ Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.
 Create a `Dockerfile` which extends the `semtech/mu-python-template`-image and set a maintainer.
 ```docker
 FROM semtech/mu-python-template:2.0.0-beta.2
-LABEL maintainer="sam.landuydt@gmail.com"
+LABEL maintainer="maintainer@example.com"
 ```
 
 Create a `web.py` entrypoint-file. (naming of the entrypoint can be configured through `APP_ENTRYPOINT`)
