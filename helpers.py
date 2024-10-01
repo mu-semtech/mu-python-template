@@ -42,7 +42,15 @@ logger.addHandler(fileHandler)
 consoleHandler = logging.StreamHandler(stream=sys.stdout)# or stderr?
 logger.addHandler(consoleHandler)
 
-LOG_SPARQL_ALL = os.environ.get('LOG_SPARQL_ALL') in ('TRUE', 'True', 'true')
+LOG_SPARQL_ALL_VAR = os.environ.get('LOG_SPARQL_ALL') 
+LOG_SPARQL_QUERIES = os.environ.get(
+    'LOG_SPARQL_QUERIES',
+    default=LOG_SPARQL_ALL_VAR
+).lower() == 'true'
+LOG_SPARQL_UPDATES = os.environ.get(
+    'LOG_SPARQL_UPDATES',
+    default=LOG_SPARQL_ALL_VAR
+).lower() == 'true'
 
 def generate_uuid():
     """Generates a random unique user id (UUID) based on the host ID and current time"""
@@ -128,8 +136,8 @@ def query(the_query):
             if header in sparqlQuery.customHttpHeaders:
                 del sparqlQuery.customHttpHeaders[header]
     sparqlQuery.setQuery(the_query)
-    if LOG_SPARQL_ALL:
-        log("execute query: \n" + the_query)
+    if LOG_SPARQL_QUERIES:
+        log("Execute query: \n" + the_query)
     return sparqlQuery.query().convert()
 
 
@@ -143,8 +151,8 @@ def update(the_query):
                 del sparqlUpdate.customHttpHeaders[header]
     sparqlUpdate.setQuery(the_query)
     if sparqlUpdate.isSparqlUpdateRequest():
-        if LOG_SPARQL_ALL:
-            log("execute query: \n" + the_query)
+        if LOG_SPARQL_UPDATES:
+            log("Execute query: \n" + the_query)
         sparqlUpdate.query()
 
 
