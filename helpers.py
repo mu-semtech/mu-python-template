@@ -42,7 +42,7 @@ logger.addHandler(fileHandler)
 consoleHandler = logging.StreamHandler(stream=sys.stdout)# or stderr?
 logger.addHandler(consoleHandler)
 
-LOG_SPARQL_ALL_VAR = os.environ.get('LOG_SPARQL_ALL') 
+LOG_SPARQL_ALL_VAR = os.environ.get('LOG_SPARQL_ALL')
 LOG_SPARQL_QUERIES = os.environ.get(
     'LOG_SPARQL_QUERIES',
     default=LOG_SPARQL_ALL_VAR
