@@ -1,5 +1,5 @@
 FROM python:3.13
-MAINTAINER Michaël Dierick "michael@dierick.io"
+LABEL maintainer="team@semantic.works"
 
 # Gunicorn Docker config
 ENV PYTHONPATH "/usr/src/app:/app"
