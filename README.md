@@ -319,11 +319,13 @@ my-python:
 - `MU_SPARQL_TIMEOUT` is used to configure the timeout (in seconds) for SPARQL queries.
 
 #### SPARQL Query Logging
-- `LOG_SPARQL_ALL`: Log *all* executed queries, read as well as update (default `true`)
+- `LOG_SPARQL_ALL`: Log *all* executed queries, read as well as update (default `True`)
 
 - `LOG_SPARQL_QUERIES`: Log *read* queries (default: `undefined`). Overrules `LOG_SPARQL_ALL`
 
 - `LOG_SPARQL_UPDATES`: Log *update* queries (default `undefined`). Overrules `LOG_SPARQL_ALL`.
+
+The string "true", ignoring casing, is considered `True`.  All other values are considered `False`.
 
 #### Meinheld Gunicorn Docker Variables
 Since this template is based on the meinheld-gunicorn-docker image, all possible environment config for that image is also available for the template. See [meinheld-gunicorn-docker#environment-variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) for more info. The template configures `WEB_CONCURRENCY` in particular to `1` by default.
