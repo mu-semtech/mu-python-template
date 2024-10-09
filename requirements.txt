@@ -1,3 +1,4 @@
 flask
 SPARQLWrapper
 rdflib
+inotify
