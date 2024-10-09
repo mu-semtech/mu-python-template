@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.13
 MAINTAINER Michaël Dierick "michael@dierick.io"
 
 # Gunicorn Docker config
