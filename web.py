@@ -24,7 +24,4 @@ builtins.app = app
 builtins.helpers = helpers
 builtins.sparql_escape = sparql_escape
 
-# Import the app from the service consuming the template
-app_file = os.environ.get('APP_ENTRYPOINT')
-module_path = 'ext.app.{}'.format(app_file)
-import_module(module_path)
+import_module("ext.app.web")

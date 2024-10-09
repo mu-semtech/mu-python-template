@@ -2,3 +2,4 @@ flask
 SPARQLWrapper
 rdflib
 inotify
+gunicorn
