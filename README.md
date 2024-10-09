@@ -4,13 +4,13 @@ Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.
 
 ## Quickstart
 
-Create a `Dockerfile` which extends the `semtech/mu-python-template`-image and set a maintainer.
+Create a `Dockerfile` which extends the `semtech/mu-python-template`-image.
 ```docker
 FROM semtech/mu-python-template:2.0.0-beta.2
 LABEL maintainer="maintainer@example.com"
 ```
 
-Create a `web.py` entrypoint-file. (naming of the entrypoint can be configured through `APP_ENTRYPOINT`)
+Create a `web.py` entrypoint-file.
 ```python
 @app.route("/hello")
 def hello():
@@ -301,38 +301,27 @@ my-python:
 
 ### Environment variables
 #### General
-
 - `LOG_LEVEL` takes the same options as defined in the Python [logging](https://docs.python.org/3/library/logging.html#logging-levels) module.
-
 - `MODE` to specify the deployment mode. Can be `development` as well as `production`. Defaults to `production`
-
 - `MU_SPARQL_ENDPOINT` is used to configure the SPARQL endpoint.
-
   - By default this is set to `http://database:8890/sparql`. In that case the triple store used in the backend should be linked to the microservice container as `database`.
-
-
 - `MU_APPLICATION_GRAPH` specifies the graph in the triple store the microservice will work in.
-
   - By default this is set to `http://mu.semte.ch/application`. The graph name can be used in the service via `settings.graph`.
-
-
 - `MU_SPARQL_TIMEOUT` is used to configure the timeout (in seconds) for SPARQL queries.
 
 #### SPARQL Query Logging
 - `LOG_SPARQL_ALL`: Log *all* executed queries, read as well as update (default `True`)
-
 - `LOG_SPARQL_QUERIES`: Log *read* queries (default: `undefined`). Overrules `LOG_SPARQL_ALL`
-
 - `LOG_SPARQL_UPDATES`: Log *update* queries (default `undefined`). Overrules `LOG_SPARQL_ALL`.
 
 The string "true", ignoring casing, is considered `True`.  All other values are considered `False`.
 
-#### Meinheld Gunicorn Docker Variables
-Since this template is based on the meinheld-gunicorn-docker image, all possible environment config for that image is also available for the template. See [meinheld-gunicorn-docker#environment-variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) for more info. The template configures `WEB_CONCURRENCY` in particular to `1` by default.
+#### Production settings
+The following variables may be set in this template in the current version but are not considered a full public interface as they are not standardized across microservices.  The variable names and features may change across releases.  They may be used, but check the release notes when upgrading.
 
-### Production
-
-For hosting the app in a production setting, the template depends on [meinheld-gunicorn-docker](https://github.com/tiangolo/meinheld-gunicorn-docker). All [environment variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) used by meinheld-gunicorn can be used to configure your service as well.
+- `WORKERS`: Amount of workers to serve requests (default `"4"`).
+- `TIMEOUT`: Workers silent for this many seconds are killed and restarted (default: `"120"`)
+- `GRACEFUL_TIMEOUT`: After receiving a restart signal, workers have this much time to finish requests (default: `"120"`)
 
 ## Other
 
