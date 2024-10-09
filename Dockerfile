@@ -1,5 +1,5 @@
 FROM tiangolo/meinheld-gunicorn:python3.8
-MAINTAINER Michaël Dierick "michael@dierick.io"
+LABEL maintainer="team@semantic.works"
 
 # Gunicorn Docker config
 ENV MODULE_NAME web
