@@ -53,7 +53,7 @@ def sparql_escape_int(obj):
 
 def sparql_escape_float(obj):
     """Converts the given float to a SPARQL-safe RDF object string with the right RDF-datatype. """
-    if not isinstance(obj, int):
+    if not isinstance(obj, float):
         warn("You are escaping something that isn't a float with \
         the 'sparql_escape_float'-method. Implicit casting will occurr.")
         obj = str(float(obj))
