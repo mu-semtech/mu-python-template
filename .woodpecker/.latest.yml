@@ -10,4 +10,4 @@ steps:
         from_secret: docker_password
 when:
   - event: push
-  branch: [master, main]
+    branch: [master, main]
