@@ -138,7 +138,11 @@ def query(the_query):
     sparqlQuery.setQuery(the_query)
     if LOG_SPARQL_QUERIES:
         log("Execute query: \n" + the_query)
-    return sparqlQuery.query().convert()
+    try:
+        return sparqlQuery.query().convert()
+    except Exception as e:
+        log("Failed Query: \n" + the_query)
+        raise e
 
 
 def update(the_query):
@@ -153,7 +157,11 @@ def update(the_query):
     if sparqlUpdate.isSparqlUpdateRequest():
         if LOG_SPARQL_UPDATES:
             log("Execute query: \n" + the_query)
-        sparqlUpdate.query()
+        try:
+            sparqlUpdate.query()
+        except Exception as e:
+            log("Failed Query: \n" + the_query)
+            raise e
 
 
 def update_modified(subject, modified=datetime.datetime.now()):
