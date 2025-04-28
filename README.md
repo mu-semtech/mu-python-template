@@ -1,13 +1,13 @@
 # Mu Python template
 
-Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3. Based on the [Flask](https://palletsprojects.com/p/flask/)-framework.
+Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.8. Based on the [Flask](https://palletsprojects.com/p/flask/)-framework.
 
 ## Quickstart
 
 Create a `Dockerfile` which extends the `semtech/mu-python-template`-image and set a maintainer.
 ```docker
 FROM semtech/mu-python-template:2.0.0-beta.2
-LABEL maintainer="sam.landuydt@gmail.com"
+LABEL maintainer="maintainer@example.com"
 ```
 
 Create a `web.py` entrypoint-file. (naming of the entrypoint can be configured through `APP_ENTRYPOINT`)
@@ -300,6 +300,7 @@ my-python:
 ```
 
 ### Environment variables
+#### General
 
 - `LOG_LEVEL` takes the same options as defined in the Python [logging](https://docs.python.org/3/library/logging.html#logging-levels) module.
 
@@ -317,7 +318,16 @@ my-python:
 
 - `MU_SPARQL_TIMEOUT` is used to configure the timeout (in seconds) for SPARQL queries.
 
+#### SPARQL Query Logging
+- `LOG_SPARQL_ALL`: Log *all* executed queries, read as well as update (default `True`)
 
+- `LOG_SPARQL_QUERIES`: Log *read* queries (default: `undefined`). Overrules `LOG_SPARQL_ALL`
+
+- `LOG_SPARQL_UPDATES`: Log *update* queries (default `undefined`). Overrules `LOG_SPARQL_ALL`.
+
+The string "true", ignoring casing, is considered `True`.  All other values are considered `False`.
+
+#### Meinheld Gunicorn Docker Variables
 Since this template is based on the meinheld-gunicorn-docker image, all possible environment config for that image is also available for the template. See [meinheld-gunicorn-docker#environment-variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) for more info. The template configures `WEB_CONCURRENCY` in particular to `1` by default.
 
 ### Production

@@ -1,5 +1,5 @@
 FROM tiangolo/meinheld-gunicorn:python3.8
-MAINTAINER Michaël Dierick "michael@dierick.io"
+LABEL maintainer="team@semantic.works"
 
 # Gunicorn Docker config
 ENV MODULE_NAME web
@@ -14,6 +14,7 @@ RUN chmod +x /start.sh
 # Template config
 ENV APP_ENTRYPOINT web
 ENV LOG_LEVEL info
+ENV LOG_SPARQL_ALL True
 ENV MU_SPARQL_ENDPOINT 'http://database:8890/sparql'
 ENV MU_SPARQL_UPDATEPOINT 'http://database:8890/sparql'
 ENV MU_APPLICATION_GRAPH 'http://mu.semte.ch/application'
