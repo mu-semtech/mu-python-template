@@ -26,15 +26,5 @@ builtins.sparql_escape = sparql_escape
 
 # Import the app from the service consuming the template
 app_file = os.environ.get('APP_ENTRYPOINT')
-try:
-    module_path = 'ext.app.{}'.format(app_file)
-    import_module(module_path)
-except Exception:
-    helpers.logger.exception('Exception raised when importing app code')
-
-#######################
-## Start Application ##
-#######################
-if __name__ == '__main__':
-    debug = os.environ.get('MODE') == "development"
-    app.run(debug=debug, host='0.0.0.0', port=80)
+module_path = 'ext.app.{}'.format(app_file)
+import_module(module_path)
