@@ -6,7 +6,7 @@ Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.
 
 Create a `Dockerfile` which extends the `semtech/mu-python-template`-image and set a maintainer.
 ```docker
-FROM semtech/mu-python-template:2.0.0-beta.2
+FROM semtech/mu-python-template:2.0.0-beta.3
 LABEL maintainer="maintainer@example.com"
 ```
 
