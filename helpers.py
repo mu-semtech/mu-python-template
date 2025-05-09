@@ -42,6 +42,16 @@ logger.addHandler(fileHandler)
 consoleHandler = logging.StreamHandler(stream=sys.stdout)# or stderr?
 logger.addHandler(consoleHandler)
 
+LOG_SPARQL_ALL_VAR = os.environ.get('LOG_SPARQL_ALL')
+LOG_SPARQL_QUERIES = os.environ.get(
+    'LOG_SPARQL_QUERIES',
+    default=LOG_SPARQL_ALL_VAR
+).lower() == 'true'
+LOG_SPARQL_UPDATES = os.environ.get(
+    'LOG_SPARQL_UPDATES',
+    default=LOG_SPARQL_ALL_VAR
+).lower() == 'true'
+
 def generate_uuid():
     """Generates a random unique user id (UUID) based on the host ID and current time"""
     return str(uuid.uuid1())
@@ -119,7 +129,6 @@ MU_HEADERS = [
 
 def query(the_query):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
-    log("execute query: \n" + the_query)
     for header in MU_HEADERS:
         if header in request.headers:
             sparqlQuery.customHttpHeaders[header] = request.headers[header]
@@ -127,7 +136,13 @@ def query(the_query):
             if header in sparqlQuery.customHttpHeaders:
                 del sparqlQuery.customHttpHeaders[header]
     sparqlQuery.setQuery(the_query)
-    return sparqlQuery.query().convert()
+    if LOG_SPARQL_QUERIES:
+        log("Execute query: \n" + the_query)
+    try:
+        return sparqlQuery.query().convert()
+    except Exception as e:
+        log("Failed Query: \n" + the_query)
+        raise e
 
 
 def update(the_query):
@@ -140,7 +155,13 @@ def update(the_query):
                 del sparqlUpdate.customHttpHeaders[header]
     sparqlUpdate.setQuery(the_query)
     if sparqlUpdate.isSparqlUpdateRequest():
-        sparqlUpdate.query()
+        if LOG_SPARQL_UPDATES:
+            log("Execute query: \n" + the_query)
+        try:
+            sparqlUpdate.query()
+        except Exception as e:
+            log("Failed Query: \n" + the_query)
+            raise e
 
 
 def update_modified(subject, modified=datetime.datetime.now()):
