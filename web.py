@@ -29,6 +29,12 @@ app_file = os.environ.get('APP_ENTRYPOINT')
 module_path = 'ext.app.{}'.format(app_file)
 import_module(module_path)
 
+if os.environ.get('LOG_EXCEPTIONS'):
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        helpers.logger.exception('Unhandled exception raised in route, returning 500')
+        raise e
+
 #######################
 ## Start Application ##
 #######################

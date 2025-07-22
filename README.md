@@ -306,6 +306,8 @@ my-python:
 
 - `MODE` to specify the deployment mode. Can be `development` as well as `production`. Defaults to `production`
 
+- `LOG_EXCEPTIONS` set to any value to add a catch-all Flask errorhandler that logs exceptions rather than just returning them, to aid with debugging. Is not on by default in development as it may prevent custom errorhandlers in you app from being reached.
+
 - `MU_SPARQL_ENDPOINT` is used to configure the SPARQL endpoint.
 
   - By default this is set to `http://database:8890/sparql`. In that case the triple store used in the backend should be linked to the microservice container as `database`.
