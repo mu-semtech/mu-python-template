@@ -1,4 +1,4 @@
-FROM tiangolo/meinheld-gunicorn:python3.8
+FROM tiangolo/meinheld-gunicorn:python3.9
 LABEL maintainer="team@semantic.works"
 
 # Gunicorn Docker config
