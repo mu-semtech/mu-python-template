@@ -3,10 +3,12 @@ import datetime
 import logging
 import os
 import sys
-from flask import jsonify, request
+from fastapi import Request
+from jsonapi_pydantic.v1_0 import Error, TopLevel
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
+from fastapi.responses import Response
 
 """
 The template provides the user with several helper methods. They aim to give you a step ahead for:
@@ -69,24 +71,6 @@ def log(msg, *args, **kwargs):
     """
     return logger.info(msg, *args, **kwargs)
 
-def error(msg, status=400, **kwargs):
-    """
-    Returns a Response object containing a JSONAPI compliant error response with the given status code (400 by default).
-
-    Response object documentation: https://flask.palletsprojects.com/en/1.1.x/api/#response-objects
-    The kwargs can be any other key supported by JSONAPI error objects: https://jsonapi.org/format/#error-objects
-    """
-    error_obj = kwargs
-    error_obj["detail"] = msg
-    error_obj["status"] = status
-    response = jsonify({
-        "errors": [error_obj]
-    })
-    response.status_code = error_obj["status"]
-    response.headers["Content-Type"] = "application/vnd.api+json"
-    return response
-
-
 
 def session_id_header(request):
     """Returns the MU-SESSION-ID header from the given requests' headers"""
@@ -127,10 +111,10 @@ MU_HEADERS = [
     "MU-AUTH-USED-GROUPS"
 ]
 
-def query(the_query):
+def query(the_query: str, request: Request | None = None):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
     for header in MU_HEADERS:
-        if header in request.headers:
+        if request is not None and header in request.headers:
             sparqlQuery.customHttpHeaders[header] = request.headers[header]
         else: # Make sure headers used for a previous query are cleared
             if header in sparqlQuery.customHttpHeaders:
@@ -145,10 +129,10 @@ def query(the_query):
         raise e
 
 
-def update(the_query):
+def update(the_query: str, request: Request | None = None):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
     for header in MU_HEADERS:
-        if header in request.headers:
+        if request is not None and header in request.headers:
             sparqlUpdate.customHttpHeaders[header] = request.headers[header]
         else: # Make sure headers used for a previous query are cleared
             if header in sparqlUpdate.customHttpHeaders:

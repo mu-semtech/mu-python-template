@@ -2,14 +2,34 @@ import os
 from importlib import import_module
 import builtins
 
-import flask
+from fastapi import FastAPI
+from fastapi.responses import Response
+from jsonapi_pydantic.v1_0 import Error, TopLevel
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from rdflib.namespace import Namespace
 
 import helpers
 from escape_helpers import sparql_escape
 
 # WSGI variable name used by the server
-app = flask.Flask(__name__)
+app = FastAPI()
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    error_object = TopLevel(
+        errors=[
+            Error(
+                detail=str(exc.detail),
+                status=exc.status_code
+            )
+        ]
+    )
+    return Response(
+        content=error_object.model_dump_json(), status_code=exc.status_code, headers={
+            'Content-Type': 'application/vnd.api+json'
+        }
+    )
 
 ##################
 ## Vocabularies ##
@@ -28,10 +48,3 @@ builtins.sparql_escape = sparql_escape
 app_file = os.environ.get('APP_ENTRYPOINT')
 module_path = 'ext.app.{}'.format(app_file)
 import_module(module_path)
-
-#######################
-## Start Application ##
-#######################
-if __name__ == '__main__':
-    debug = os.environ.get('MODE') == "development"
-    app.run(debug=debug, host='0.0.0.0', port=80)

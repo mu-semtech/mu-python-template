@@ -1,6 +1,6 @@
 # Mu Python template
 
-Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.8. Based on the [Flask](https://palletsprojects.com/p/flask/)-framework.
+Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.8. Based on the [FastAPI](https://fastapi.tiangolo.com/)-framework.
 
 ## Quickstart
 
@@ -12,8 +12,11 @@ LABEL maintainer="maintainer@example.com"
 
 Create a `web.py` entrypoint-file. (naming of the entrypoint can be configured through `APP_ENTRYPOINT`)
 ```python
-@app.route("/hello")
-def hello():
+from starlette.responses import PlainTextResponse
+
+
+@app.get("/hello")
+def hello() -> PlainTextResponse:
     return "Hello from the mu-python-template!"
 ```
 
@@ -76,19 +79,6 @@ def log(msg, *args, **kwargs)
 > 
 > Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects) 
 > used by the template. The methods provided by this instance can be used for more fine-grained logging.
-
-<a id="helpers.error"></a>
-
-#### `error`
-
-```python
-def error(msg, status=400, **kwargs)
-```
-
-> Returns a Response object containing a JSONAPI compliant error response with the given status code (400 by default).
-> 
-> Response object documentation: https://flask.palletsprojects.com/en/1.1.x/api/#response-objects
-> The kwargs can be any other key supported by JSONAPI error objects: https://jsonapi.org/format/#error-objects
 
 <a id="helpers.session_id_header"></a>
 
