@@ -53,6 +53,13 @@ example docker-compose parameters:
       - /home/my/code/my-python-service:/app
 ```
 
+### Asynchronous request handlers
+Unless you know what you are doing, methods annotated with @app (which then become web routes) should
+always be declared as synchronous methods (no async in front!). This might make your service blocking
+on computationally demanding requests.
+
+More information [here](https://fastapi.tiangolo.com/async/#in-a-hurry)
+
 ### Helper methods
 <a id="helpers.generate_uuid"></a>
 
