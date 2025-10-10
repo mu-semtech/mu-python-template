@@ -1,5 +1,0 @@
-fastapi
-uvicorn
-SPARQLWrapper
-rdflib
-jsonapi-pydantic

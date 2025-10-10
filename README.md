@@ -1,6 +1,6 @@
 # Mu Python template
 
-Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.8. Based on the [FastAPI](https://fastapi.tiangolo.com/)-framework.
+Template for [mu.semte.ch](http://mu.semte.ch)-microservices written in Python3.12. Based on the [FastAPI](https://fastapi.tiangolo.com/)-framework.
 
 ## Quickstart
 
@@ -13,9 +13,11 @@ LABEL maintainer="maintainer@example.com"
 Create a `web.py` entrypoint-file. (naming of the entrypoint can be configured through `APP_ENTRYPOINT`)
 ```python
 from starlette.responses import PlainTextResponse
+from fastapi import APIRouter
 
+router = APIRouter()
 
-@app.get("/hello")
+@router.get("/hello")
 def hello() -> PlainTextResponse:
     return "Hello from the mu-python-template!"
 ```
@@ -39,7 +41,7 @@ curl localhost:8080/hello
 
 ### Dependencies
 
-If your service needs external libraries other than the ones already provided by the template (Flask, SPARQLWrapper and rdflib), you can specify those in a [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)-file. The template will take care of installing them when you build your Docker image and when you boot the template in development mode for the first time.
+If your service needs external libraries other than the ones already provided by the template (FastAPI, uvicorn, SPARQLWrapper, rdflib, and jsonapi-pydantic), you can specify those in a [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)-file. The template will take care of installing them when you build your Docker image and when you boot the template in development mode for the first time.
 
 ### Development mode
 
@@ -52,13 +54,6 @@ example docker-compose parameters:
     volumes:
       - /home/my/code/my-python-service:/app
 ```
-
-### Asynchronous request handlers
-Unless you know what you are doing, methods annotated with @app (which then become web routes) should
-always be declared as synchronous methods (no async in front!). This might make your service blocking
-on computationally demanding requests.
-
-More information [here](https://fastapi.tiangolo.com/async/#in-a-hurry)
 
 ### Helper methods
 <a id="helpers.generate_uuid"></a>
@@ -324,17 +319,12 @@ my-python:
 
 The string "true", ignoring casing, is considered `True`.  All other values are considered `False`.
 
-#### Meinheld Gunicorn Docker Variables
-Since this template is based on the meinheld-gunicorn-docker image, all possible environment config for that image is also available for the template. See [meinheld-gunicorn-docker#environment-variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) for more info. The template configures `WEB_CONCURRENCY` in particular to `1` by default.
-
-### Production
-
-For hosting the app in a production setting, the template depends on [meinheld-gunicorn-docker](https://github.com/tiangolo/meinheld-gunicorn-docker). All [environment variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) used by meinheld-gunicorn can be used to configure your service as well.
-
 ## Other
 
 ### Reassigning `app`
-In regular Flask applications (e.g. those not run within this template) you are required to define `app` by using `app = Flask(__name__)` or similar. This does *not* need to be done in your web.py, as this is handled by the microservice architecture/template. Redefining this may cause `The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.` to be thrown on your routes, which can be luckily be fixed by simply removing the previously mentioned `app = ...` line.
+In regular FastAPI applications (e.g. those not run within this template) you are required to define `app` by using `app = FastAPI()` or similar. This does *not* need to be done in your web.py, as this is handled by the microservice architecture/template. Redefining this may cause `The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.` to be thrown on your routes, which can be luckily be fixed by simply removing the previously mentioned `app = ...` line.
+
+If you do not like this behavior (because e.g. your IDE does not find the app variable), it is possible (as is documented in this readme) to define an APIRouter object in your web.py file. It will be automatically picked up by the template. In this scenario, do not override the app variable as it could lead to the same error as before.
 
 ### readme.py
 To simplify documenting the helper functions, `README.py` can be used to import & render the docstrings into README.md.
@@ -344,3 +334,50 @@ python3 -m pip install pydoc-markdown
 python3 README.py
 ```
 You can customise the output through the API configuration! See [README.py](README.py) && the [pydoc-markdown docs](https://niklasrosenstein.github.io/pydoc-markdown/).
+
+## Migate from Flask based versions
+Previous versions of this template were based on Flask. Effort was made to keep as much backward compatible as possible.
+However, some things were slightly modified or require your attention
+
+### Defining routes
+Flask uses an `@app.route` syntax, FastAPI provides several functions on the annotator object based on the HTTP method (`@api.get`, `@api.route`). You may need to update this in your code
+
+### Typing
+FastAPI heavily uses type annotations to determine what goes in and out of your API. If the return type is not specified, a JSONResponse is assumed and returning e.g. a string will result in an error. It is highly recommended to use type annotations and pydantic as much as possible to define request / response models. More information: https://fastapi.tiangolo.com/features/#pydantic-features
+
+### Error handling
+Error handling in FastAPI is much more involved (read about it [here](https://fastapi.tiangolo.com/tutorial/handling-errors/)).
+The `helpers.error` function was kept for backward compatibility but we encourage you to simple raise exceptions (more specifically the BaseHTTPException which is automatically injected by the template)
+```python
+from starlette.responses import PlainTextResponse
+from fastapi import APIRouter
+
+router = APIRouter()
+@router.get("/hello")
+def hello() -> PlainTextResponse:
+    raise BaseHTTPException(detail="test")
+```
+Advanced scenarios are possible, you can introduce your own Exception hierarchy, and insert specific handlers for them through the app variable:
+```python
+class UnicornException(Exception):
+    def __init__(self, name: str):
+        self.name = name
+
+@app.exception_handler(UnicornException)
+def unicorn_exception_handler(request: Request, exc: UnicornException):
+    return JSONResponse(
+        status_code=418,
+        content={"message": f"Oops! {exc.name} did something."},
+    )
+
+@app.get("/hello/{name}")
+def hello(name: str) -> PlainTextResponse:
+    raise UnicornException(name=name)
+```
+
+### Asynchronous request handlers
+Unless you know what you are doing, methods annotated with @app or any router you declared (which then become web routes) should
+always be declared as synchronous methods (no async in front!). This might make your service blocking
+on computationally demanding requests.
+
+More information [here](https://fastapi.tiangolo.com/async/#in-a-hurry)

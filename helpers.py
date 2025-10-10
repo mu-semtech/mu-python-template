@@ -4,11 +4,10 @@ import logging
 import os
 import sys
 from fastapi import Request
-from jsonapi_pydantic.v1_0 import Error, TopLevel
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
-from fastapi.responses import Response
+from deprecated import deprecated
 
 """
 The template provides the user with several helper methods. They aim to give you a step ahead for:
@@ -71,6 +70,17 @@ def log(msg, *args, **kwargs):
     """
     return logger.info(msg, *args, **kwargs)
 
+
+@deprecated(reason="This function is here for backward compatibility, use the default error handling of FastAPI (raising exceptions)")
+def error(msg: str, status: int=400, **kwargs):
+    """
+    Deprecated, preferably use default FASTAPI error handling:
+    https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers
+
+    To mimic the behavior of this function, raise a BaseHTTPException supporting the same functionality as this function.
+    """
+    from web import BaseHTTPException
+    raise BaseHTTPException(status, msg, **kwargs)
 
 def session_id_header(request):
     """Returns the MU-SESSION-ID header from the given requests' headers"""

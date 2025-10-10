@@ -1,0 +1,13 @@
+[project]
+name = "mu-python-template"
+version = "3.0.0"
+description = "Template for mu.semte.ch-microservices written in Python3.12. Based on the FastAPI-framework."
+requires-python = ">=3.12"
+dependencies = [
+    "deprecated>=1.2.18",
+    "fastapi>=0.118.2",
+    "jsonapi-pydantic>=0.2.5",
+    "rdflib>=7.2.1",
+    "sparqlwrapper>=2.0.0",
+    "uvicorn>=0.37.0",
+]
