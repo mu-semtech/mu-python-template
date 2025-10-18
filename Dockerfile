@@ -37,7 +37,7 @@ RUN ln -s /app /usr/src/app/ext \
      && cd /usr/src/app \
      && pip3 install -r requirements.txt
 
-ONBUILD ADD Dockerfile requirement[s].txt build.sh /app/
+ONBUILD ADD Dockerfile requirement[s].txt build.sh* /app/
 ONBUILD RUN cd /app/ \
     && if [ -f build.sh ]; then chmod +x build.sh && ./build.sh; fi \
     && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
