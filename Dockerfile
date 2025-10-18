@@ -17,6 +17,7 @@ ENV MU_SPARQL_UPDATEPOINT='http://database:8890/sparql'
 ENV MU_APPLICATION_GRAPH='http://mu.semte.ch/application'
 ENV MODE='production'
 
+RUN apt update && apt install -y gcc g++
 RUN pip install uv
 RUN mkdir -p /usr/src/app && mkdir /logs
 WORKDIR /usr/src/app
@@ -29,8 +30,9 @@ RUN ln -s /app /usr/src/app/ext \
 ENV VIRTUAL_ENV=/usr/src/app/.venv
 
 CMD [ "/root/start.sh" ]
-ONBUILD ADD Dockerfile requirement[s].txt /app/
+ONBUILD ADD Dockerfile requirement[s].txt build.sh /app/
 ONBUILD RUN cd /app/ && ls \
+    && if [ -f build.sh ]; then chmod +x build.sh && ./build.sh; fi \
     && if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
 ONBUILD ADD . /app/

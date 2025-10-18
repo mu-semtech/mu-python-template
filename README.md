@@ -43,6 +43,13 @@ curl localhost:8080/hello
 
 If your service needs external libraries other than the ones already provided by the template (FastAPI, uvicorn, SPARQLWrapper, rdflib, and jsonapi-pydantic), you can specify those in a [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)-file. The template will take care of installing them when you build your Docker image and when you boot the template in development mode for the first time.
 
+You may find that your python dependencies may depend on C/C++ libraries which may not be present (e.g. libgeos for a package such as shapely). In order to overcome this issue, add a file build.sh which is executed before installation of python dependencies. E.g.:
+```bash
+#!/bin/sh
+
+apt update && apt install -y libgeos-dev
+```
+
 ### Development mode
 
 By leveraging Dockers' [bind-mount](https://docs.docker.com/storage/bind-mounts/), you can mount your application code into an existing service image. This spares you from building a new image to test each change. Just mount your services' folder to the containers' `/app`. On top of that, you can configure the environment variable `MODE` to `development`. That enables live-reloading of the server, so it immediately updates when you save a file.  
