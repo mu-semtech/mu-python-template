@@ -30,7 +30,7 @@ RUN ln -s /app /usr/src/app/ext \
 ENV VIRTUAL_ENV=/usr/src/app/.venv
 
 CMD [ "/root/start.sh" ]
-ONBUILD ADD Dockerfile requirement[s].txt build.sh /app/
+ONBUILD ADD Dockerfile requirement[s].txt build.sh* /app/
 ONBUILD RUN cd /app/ && ls \
     && if [ -f build.sh ]; then chmod +x build.sh && ./build.sh; fi \
     && if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
