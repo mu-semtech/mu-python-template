@@ -24,6 +24,11 @@ ENV MU_SPARQL_UPDATEPOINT 'http://database:8890/sparql'
 ENV MU_APPLICATION_GRAPH 'http://mu.semte.ch/application'
 ENV MODE 'production'
 
+# Compilers for dependencies that ship no wheels (previous base image was a full python image)
+RUN apt-get update \
+     && apt-get install -y --no-install-recommends gcc g++ \
+     && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 ADD . /usr/src/app
@@ -32,8 +37,9 @@ RUN ln -s /app /usr/src/app/ext \
      && cd /usr/src/app \
      && pip3 install -r requirements.txt
 
-ONBUILD ADD Dockerfile requirement[s].txt /app/
+ONBUILD ADD Dockerfile requirement[s].txt build.sh /app/
 ONBUILD RUN cd /app/ \
+    && if [ -f build.sh ]; then chmod +x build.sh && ./build.sh; fi \
     && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
 ONBUILD ADD . /app/
