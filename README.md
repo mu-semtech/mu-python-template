@@ -347,3 +347,6 @@ python3 -m pip install pydoc-markdown
 python3 README.py
 ```
 You can customise the output through the API configuration! See [README.py](README.py) && the [pydoc-markdown docs](https://niklasrosenstein.github.io/pydoc-markdown/).
+
+### Custom build commands
+To execute custom bash statements during the image build (e.g. to install aditional system libraries), provide an `on-build.sh` script in the root of your service. It will be automatically picked up and executed by the Docker build.
