@@ -34,7 +34,7 @@ log_levels = {
     'ERROR': logging.ERROR,
     'CRITICAL': logging.CRITICAL
 }
-log_dir = '/logs'
+log_dir = os.getenv('LOG_DIR', '/logs')
 if not os.path.exists(log_dir): os.makedirs(log_dir)
 logger = logging.getLogger('MU_PYTHON_TEMPLATE_LOGGER')
 logger.setLevel(log_levels.get(os.environ.get('LOG_LEVEL').upper()))
