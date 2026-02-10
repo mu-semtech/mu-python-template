@@ -3,6 +3,7 @@ import datetime
 import logging
 import os
 import sys
+import time
 from fastapi import Request
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
@@ -183,6 +184,27 @@ def update(the_query: str, request: Request | None = None, thread_safe: bool = F
         except Exception as e:
             log("Failed Query: \n" + the_query)
             raise e
+
+def wait_for_triplestore():
+    triplestore_live = False
+    log("Waiting for triplestore...")
+    while not triplestore_live:
+        try:
+            result = query(
+                """
+                SELECT ?s WHERE {
+                ?s ?p ?o.
+                } LIMIT 1""",
+                sudo=True
+            )
+            if result["results"]["bindings"][0]["s"]["value"]:
+                triplestore_live = True
+            else:
+                raise Exception("triplestore not ready yet...")
+        except Exception as _e:
+            log("Triplestore not live yet, retrying...")
+            time.sleep(1)
+    log("Triplestore ready!")
 
 
 def update_modified(subject, modified=datetime.datetime.now()):
