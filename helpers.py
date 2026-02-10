@@ -61,11 +61,11 @@ def generate_uuid():
 def log(msg, *args, **kwargs):
     """
     Write a log message to the log file.
-    
+
     Works exactly the same as the logging.info (https://docs.python.org/3/library/logging.html#logging.info) method from pythons' logging module.
-    Logs are written to the /logs directory in the docker container.  
-    
-    Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects) 
+    Logs are written to the /logs directory in the docker container.
+
+    Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects)
     used by the template. The methods provided by this instance can be used for more fine-grained logging.
     """
     return logger.info(msg, *args, **kwargs)
@@ -105,14 +105,23 @@ def validate_resource_type(expected_type, data):
         return error("Incorrect type. Type must be " + str(expected_type) +
                      ", instead of " + str(data['type']) + ".", 409)
 
+def build_sparql_query():
+    sparql_query = SPARQLWrapper(os.environ.get('MU_SPARQL_ENDPOINT'), returnFormat=JSON)
+    if os.environ.get('MU_SPARQL_TIMEOUT'):
+        timeout = int(os.environ.get('MU_SPARQL_TIMEOUT'))
+        sparql_query.setTimeout(timeout)
+    return sparql_query
 
-sparqlQuery = SPARQLWrapper(os.environ.get('MU_SPARQL_ENDPOINT'), returnFormat=JSON)
-sparqlUpdate = SPARQLWrapper(os.environ.get('MU_SPARQL_UPDATEPOINT'), returnFormat=JSON)
-sparqlUpdate.method = 'POST'
-if os.environ.get('MU_SPARQL_TIMEOUT'):
-    timeout = int(os.environ.get('MU_SPARQL_TIMEOUT'))
-    sparqlQuery.setTimeout(timeout)
-    sparqlUpdate.setTimeout(timeout)
+def build_sparql_update():
+    sparql_update = SPARQLWrapper(os.environ.get('MU_SPARQL_UPDATEPOINT'), returnFormat=JSON)
+    sparql_update.method = 'POST'
+    if os.environ.get('MU_SPARQL_TIMEOUT'):
+        timeout = int(os.environ.get('MU_SPARQL_TIMEOUT'))
+        sparql_update.setTimeout(timeout)
+    return sparql_update
+
+sparqlQuery = build_sparql_query()
+sparqlUpdate = build_sparql_update()
 
 MU_HEADERS = [
     "MU-SESSION-ID",
@@ -121,38 +130,56 @@ MU_HEADERS = [
     "MU-AUTH-USED-GROUPS"
 ]
 
-def query(the_query: str, request: Request | None = None):
-    """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
+def set_sparql_interface_headers(sparql_interface, request, sudo):
     for header in MU_HEADERS:
         if request is not None and header in request.headers:
-            sparqlQuery.customHttpHeaders[header] = request.headers[header]
+            sparql_interface.customHttpHeaders[header] = request.headers[header]
         else: # Make sure headers used for a previous query are cleared
-            if header in sparqlQuery.customHttpHeaders:
-                del sparqlQuery.customHttpHeaders[header]
-    sparqlQuery.setQuery(the_query)
+            if header in sparql_interface.customHttpHeaders:
+                del sparql_interface.customHttpHeaders[header]
+    if sudo:
+        sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
+    else:
+        del sparql_interface.customHttpHeaders["mu-auth-sudo"]
+
+
+
+def query(the_query: str, request: Request | None = None, thread_safe: bool = False, sudo: bool = False):
+    """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
+    sparql_interface = sparqlQuery
+
+    if thread_safe:
+        # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
+        sparql_interface = build_sparql_query()
+
+    set_sparql_interface_headers(sparql_interface, request, sudo)
+
+    sparql_interface.setQuery(the_query)
     if LOG_SPARQL_QUERIES:
         log("Execute query: \n" + the_query)
     try:
-        return sparqlQuery.query().convert()
+        return sparql_interface.query().convert()
     except Exception as e:
         log("Failed Query: \n" + the_query)
         raise e
 
 
-def update(the_query: str, request: Request | None = None):
+def update(the_query: str, request: Request | None = None, thread_safe: bool = False, sudo: bool = False):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
-    for header in MU_HEADERS:
-        if request is not None and header in request.headers:
-            sparqlUpdate.customHttpHeaders[header] = request.headers[header]
-        else: # Make sure headers used for a previous query are cleared
-            if header in sparqlUpdate.customHttpHeaders:
-                del sparqlUpdate.customHttpHeaders[header]
-    sparqlUpdate.setQuery(the_query)
-    if sparqlUpdate.isSparqlUpdateRequest():
+    sparql_interface = sparqlUpdate
+
+    if thread_safe:
+        # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
+        sparql_interface = build_sparql_update()
+
+    set_sparql_interface_headers(sparql_interface, request, sudo)
+
+    sparql_interface.setQuery(the_query)
+    if sparql_interface.isSparqlUpdateRequest():
         if LOG_SPARQL_UPDATES:
             log("Execute query: \n" + the_query)
         try:
-            sparqlUpdate.query()
+            sparql_interface.query()
         except Exception as e:
             log("Failed Query: \n" + the_query)
             raise e
