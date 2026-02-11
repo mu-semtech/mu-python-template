@@ -157,7 +157,7 @@ def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
         del sparql_interface.customHttpHeaders["mu-auth-scope"]
 
 
-def query(the_query: str, sudo: bool = False, scope: str | None = None):
+def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
     # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
     sparql_interface = build_sparql_query()
@@ -174,7 +174,7 @@ def query(the_query: str, sudo: bool = False, scope: str | None = None):
         raise e
 
 
-def update(the_query: str, sudo: bool = False, scope: str | None = None):
+def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
     # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
     sparql_interface = build_sparql_update()
