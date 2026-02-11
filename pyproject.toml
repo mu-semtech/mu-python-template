@@ -11,4 +11,5 @@ dependencies = [
     "rdflib>=7.2.1",
     "sparqlwrapper>=2.0.0",
     "uvicorn>=0.37.0",
+    "starlette-context>=0.4.0",
 ]

@@ -8,12 +8,26 @@ from fastapi.responses import Response
 from jsonapi_pydantic.v1_0 import Error, TopLevel, Meta, Source, ErrorLinks
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from rdflib.namespace import Namespace
+from starlette.middleware import Middleware
+from starlette_context.middleware import RawContextMiddleware
+from fastapi import Request
+from helpers import MU_HEADERS
 
 import helpers
 from escape_helpers import sparql_escape
 
+class CustomContextMiddleware(RawContextMiddleware):
+    async def set_context(self, request: Request) -> dict:
+        context = await super().set_context(request)
+        headers = {}
+        context["headers"] = headers
+        for header in MU_HEADERS:
+            if header in request.headers:
+                headers[header] = request.headers[header]
+        return context
+
 # WSGI variable name used by the server
-app = FastAPI()
+app = FastAPI(middleware=[Middleware(CustomContextMiddleware)])
 
 
 class BaseHTTPException(StarletteHTTPException):
