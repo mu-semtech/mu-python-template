@@ -52,7 +52,7 @@ apt update && apt install -y libgeos-dev
 
 ### Development mode
 
-By leveraging Dockers' [bind-mount](https://docs.docker.com/storage/bind-mounts/), you can mount your application code into an existing service image. This spares you from building a new image to test each change. Just mount your services' folder to the containers' `/app`. On top of that, you can configure the environment variable `MODE` to `development`. That enables live-reloading of the server, so it immediately updates when you save a file.  
+By leveraging Dockers' [bind-mount](https://docs.docker.com/storage/bind-mounts/), you can mount your application code into an existing service image. This spares you from building a new image to test each change. Just mount your services' folder to the containers' `/app`. On top of that, you can configure the environment variable `MODE` to `development`. That enables live-reloading of the server, so it immediately updates when you save a file.
 
 example docker-compose parameters:
 ```yml
@@ -82,11 +82,11 @@ def log(msg, *args, **kwargs)
 ```
 
 > Write a log message to the log file.
-> 
+>
 > Works exactly the same as the logging.info (https://docs.python.org/3/library/logging.html#logging.info) method from pythons' logging module.
-> Logs are written to the /logs directory in the docker container.  
-> 
-> Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects) 
+> Logs are written to the /logs directory in the docker container.
+>
+> Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects)
 > used by the template. The methods provided by this instance can be used for more fine-grained logging.
 
 <a id="helpers.session_id_header"></a>
@@ -134,10 +134,15 @@ def validate_resource_type(expected_type, data)
 #### `query`
 
 ```python
-def query(the_query)
+def query(the_query, request = None, thread_safe = False, sudo = False )
 ```
 
 > Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default).
+>
+> Advanced options:
+> - request: pass in the original request to add in MU-SESSION-ID, MU-CALL-ID, MU-AUTH-ALLOWED-GROUPS, MU-AUTH-USED-GROUPS headers to the sparql request
+> - thread_safe: you may configure fastapi to use multiple worker threads and still use sudo or request to modify the sparql request's http headers. If so, use thread_safe to create a new sparql client every time to avoid contamination of the sparqlQuery object by other threads. Slight performance loss, but hey, you got threads!
+> - sudo: perform a sudo query, ignoring the groups of the originating
 
 <a id="helpers.update"></a>
 
@@ -148,6 +153,11 @@ def update(the_query)
 ```
 
 > Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens.
+>
+> Advanced options:
+> - request: pass in the original request to add in MU-SESSION-ID, MU-CALL-ID, MU-AUTH-ALLOWED-GROUPS, MU-AUTH-USED-GROUPS headers to the sparql request
+> - thread_safe: you may configure fastapi to use multiple worker threads and still use sudo or request to modify the sparql request's http headers. If so, use thread_safe to create a new sparql client every time to avoid contamination of the sparqlQuery object by other threads. Slight performance loss, but hey, you got threads!
+> - sudo: perform a sudo query, ignoring the groups of the originating request
 
 <a id="helpers.update_modified"></a>
 
@@ -248,12 +258,12 @@ def sparql_escape_uri(obj)
 def sparql_escape(obj)
 ```
 
-> Converts the given object to a SPARQL-safe RDF object string with the right RDF-datatype. 
-> 
+> Converts the given object to a SPARQL-safe RDF object string with the right RDF-datatype.
+>
 > These functions should be used especially when inserting user-input to avoid SPARQL-injection.
 > Separate functions are available for different python datatypes.
 > The `sparql_escape` function however can automatically select the right method to use, for the following Python datatypes:
-> 
+>
 > - `str`
 > - `int`
 > - `float`
@@ -261,8 +271,16 @@ def sparql_escape(obj)
 > - `datetime.date`
 > - `datetime.time`
 > - `boolean`
-> 
+>
 > The `sparql_escape_uri`-function can be used for escaping URI's.
+
+#### `wait_for_triplestore`
+
+```python
+def wait_for_triplestore()
+```
+
+> Wait until the triplestore is running. Performs a sudo select query with limit 1 until it gets a proper result from the triplestore
 
 ### Writing SPARQL Queries
 
@@ -286,6 +304,19 @@ WHERE {
 """)
 query_string = query_template.substitute(person=sparql_escape_uri(my_person))
 query_result = query(query_string)
+```
+
+### Functions on startup
+Because of the way FastApi works, logic that should be run on startup should always be wrapped with an `@app.on_evente("startup")` decorator. For instance:
+
+```py
+@app.on_event("startup")
+async def startup_event():
+    wait_for_triplestore()
+    # on startup fail existing busy tasks
+    fail_busy_and_scheduled_tasks()
+    # on startup also immediately start scheduled tasks
+    process_open_tasks()
 ```
 
 ## Deployment
@@ -342,7 +373,7 @@ python3 README.py
 ```
 You can customise the output through the API configuration! See [README.py](README.py) && the [pydoc-markdown docs](https://niklasrosenstein.github.io/pydoc-markdown/).
 
-## Migate from Flask based versions
+## Migrate from Flask based versions
 Previous versions of this template were based on Flask. Effort was made to keep as much backward compatible as possible.
 However, some things were slightly modified or require your attention
 
@@ -388,3 +419,6 @@ always be declared as synchronous methods (no async in front!). This might make 
 on computationally demanding requests.
 
 More information [here](https://fastapi.tiangolo.com/async/#in-a-hurry)
+
+### Startup functions
+Be sure to wrap your startup functions with a `@app.on_event("startup")` decorator
