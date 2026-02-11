@@ -4,11 +4,11 @@ import logging
 import os
 import sys
 import time
-from fastapi import Request
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
 from deprecated import deprecated
+from starlette_context import context
 
 """
 The template provides the user with several helper methods. They aim to give you a step ahead for:
@@ -131,21 +131,21 @@ MU_HEADERS = [
     "MU-AUTH-USED-GROUPS"
 ]
 
-def set_sparql_interface_headers(sparql_interface, request, sudo):
+def set_sparql_interface_headers(sparql_interface, sudo):
     for header in MU_HEADERS:
-        if request is not None and header in request.headers:
-            sparql_interface.customHttpHeaders[header] = request.headers[header]
+        if context.exists() and header in context["headers"]:
+            sparql_interface.customHttpHeaders[header] = context["headers"][header]
         else: # Make sure headers used for a previous query are cleared
             if header in sparql_interface.customHttpHeaders:
                 del sparql_interface.customHttpHeaders[header]
     if sudo:
         sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
-    else:
+    elif "mu-auth-sudo" in sparql_interface.customHttpHeaders:
         del sparql_interface.customHttpHeaders["mu-auth-sudo"]
 
 
 
-def query(the_query: str, request: Request | None = None, thread_safe: bool = False, sudo: bool = False):
+def query(the_query: str, thread_safe: bool = False, sudo: bool = False):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
     sparql_interface = sparqlQuery
 
@@ -153,7 +153,7 @@ def query(the_query: str, request: Request | None = None, thread_safe: bool = Fa
         # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
         sparql_interface = build_sparql_query()
 
-    set_sparql_interface_headers(sparql_interface, request, sudo)
+    set_sparql_interface_headers(sparql_interface, sudo)
 
     sparql_interface.setQuery(the_query)
     if LOG_SPARQL_QUERIES:
@@ -165,7 +165,7 @@ def query(the_query: str, request: Request | None = None, thread_safe: bool = Fa
         raise e
 
 
-def update(the_query: str, request: Request | None = None, thread_safe: bool = False, sudo: bool = False):
+def update(the_query: str, thread_safe: bool = False, sudo: bool = False):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
     sparql_interface = sparqlUpdate
 
@@ -173,7 +173,7 @@ def update(the_query: str, request: Request | None = None, thread_safe: bool = F
         # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
         sparql_interface = build_sparql_update()
 
-    set_sparql_interface_headers(sparql_interface, request, sudo)
+    set_sparql_interface_headers(sparql_interface, sudo)
 
     sparql_interface.setQuery(the_query)
     if sparql_interface.isSparqlUpdateRequest():
