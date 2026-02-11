@@ -134,13 +134,12 @@ def validate_resource_type(expected_type, data)
 #### `query`
 
 ```python
-def query(the_query, thread_safe = False, sudo = False )
+def query(the_query, sudo = False )
 ```
 
 > Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default).
 >
 > Advanced options:
-> - thread_safe: you may configure fastapi to use multiple worker threads and still use sudo or request to modify the sparql request's http headers. If so, use thread_safe to create a new sparql client every time to avoid contamination of the sparqlQuery object by other threads. Slight performance loss, but hey, you got threads!
 > - sudo: perform a sudo query, ignoring the groups of the originating
 
 <a id="helpers.update"></a>
@@ -148,13 +147,12 @@ def query(the_query, thread_safe = False, sudo = False )
 #### `update`
 
 ```python
-def update(the_query, thread_safe = False, sudo = False)
+def update(the_query, sudo = False)
 ```
 
 > Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens.
 >
 > Advanced options:
-> - thread_safe: you may configure fastapi to use multiple worker threads and still use sudo or request to modify the sparql request's http headers. If so, use thread_safe to create a new sparql client every time to avoid contamination of the sparqlQuery object by other threads. Slight performance loss, but hey, you got threads!
 > - sudo: perform a sudo query, ignoring the groups of the originating request
 
 <a id="helpers.update_modified"></a>

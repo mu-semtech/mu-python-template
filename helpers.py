@@ -145,13 +145,10 @@ def set_sparql_interface_headers(sparql_interface, sudo):
 
 
 
-def query(the_query: str, thread_safe: bool = False, sudo: bool = False):
+def query(the_query: str, sudo: bool = False):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
-    sparql_interface = sparqlQuery
-
-    if thread_safe:
-        # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
-        sparql_interface = build_sparql_query()
+    # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
+    sparql_interface = build_sparql_query()
 
     set_sparql_interface_headers(sparql_interface, sudo)
 
@@ -165,13 +162,10 @@ def query(the_query: str, thread_safe: bool = False, sudo: bool = False):
         raise e
 
 
-def update(the_query: str, thread_safe: bool = False, sudo: bool = False):
+def update(the_query: str, sudo: bool = False):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
-    sparql_interface = sparqlUpdate
-
-    if thread_safe:
-        # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
-        sparql_interface = build_sparql_update()
+    # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
+    sparql_interface = build_sparql_update()
 
     set_sparql_interface_headers(sparql_interface, sudo)
 
