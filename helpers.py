@@ -26,6 +26,8 @@ Available functions:
 """
 
 MU_APPLICATION_GRAPH = os.environ.get('MU_APPLICATION_GRAPH')
+ALLOW_MU_AUTH_SUDO = os.environ.get("ALLOW_MU_AUTH_SUDO") in ['true', 'True', 'yes']
+DEFAULT_MU_AUTH_SCOPE = os.environ.get("DEFAULT_MU_AUTH_SCOPE")
 
 # TODO: Figure out how logging works when production uses multiple workers
 log_levels = {
@@ -131,7 +133,7 @@ MU_HEADERS = [
     "MU-AUTH-USED-GROUPS"
 ]
 
-def set_sparql_interface_headers(sparql_interface, sudo):
+def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
     for header in MU_HEADERS:
         if context.exists() and header in context["headers"]:
             sparql_interface.customHttpHeaders[header] = context["headers"][header]
@@ -139,18 +141,28 @@ def set_sparql_interface_headers(sparql_interface, sudo):
             if header in sparql_interface.customHttpHeaders:
                 del sparql_interface.customHttpHeaders[header]
     if sudo:
-        sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
+        if ALLOW_MU_AUTH_SUDO:
+            sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
+        else:
+            from web import BaseHTTPException
+            raise BaseHTTPException(403, "tried to execute sudo query without explicit permission on container level")
     elif "mu-auth-sudo" in sparql_interface.customHttpHeaders:
         del sparql_interface.customHttpHeaders["mu-auth-sudo"]
 
+    if scope:
+        sparql_interface.customHttpHeaders["mu-auth-scope"] = scope
+    elif DEFAULT_MU_AUTH_SCOPE:
+        sparql_interface.customHttpHeaders["mu-auth-scope"] = DEFAULT_MU_AUTH_SCOPE
+    elif "mu-auth_scope" in sparql_interface.customHttpHeaders:
+        del sparql_interface.customHttpHeaders["mu-auth-scope"]
 
 
-def query(the_query: str, sudo: bool = False):
+def query(the_query: str, sudo: bool = False, scope: str | None = None):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
     # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
     sparql_interface = build_sparql_query()
 
-    set_sparql_interface_headers(sparql_interface, sudo)
+    set_sparql_interface_headers(sparql_interface, sudo=sudo, scope=scope)
 
     sparql_interface.setQuery(the_query)
     if LOG_SPARQL_QUERIES:
@@ -162,12 +174,12 @@ def query(the_query: str, sudo: bool = False):
         raise e
 
 
-def update(the_query: str, sudo: bool = False):
+def update(the_query: str, sudo: bool = False, scope: str | None = None):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
     # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
     sparql_interface = build_sparql_update()
 
-    set_sparql_interface_headers(sparql_interface, sudo)
+    set_sparql_interface_headers(sparql_interface, sudo=sudo, scope=scope)
 
     sparql_interface.setQuery(the_query)
     if sparql_interface.isSparqlUpdateRequest():
@@ -189,7 +201,6 @@ def wait_for_triplestore():
                 SELECT ?s WHERE {
                 ?s ?p ?o.
                 } LIMIT 1""",
-                sudo=True
             )
             if result["results"]["bindings"][0]["s"]["value"]:
                 triplestore_live = True
