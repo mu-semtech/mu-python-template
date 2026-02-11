@@ -3,7 +3,7 @@ import datetime
 import logging
 import os
 import sys
-from flask import jsonify, request
+from flask import jsonify, request, has_request_context
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -138,14 +138,14 @@ MU_HEADERS = [
 
 def set_sparql_interface_headers(sparql_interface, sudo):
     for header in MU_HEADERS:
-        if header in request.headers:
+        if has_request_context() and header in request.headers:
             sparql_interface.customHttpHeaders[header] = request.headers[header]
         else: # Make sure headers used for a previous query are cleared
             if header in sparql_interface.customHttpHeaders:
                 del sparql_interface.customHttpHeaders[header]
     if sudo:
         sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
-    else:
+    elif "mu-auth-sudo" in sparql_interface.customHttpHeaders:
         del sparql_interface.customHttpHeaders["mu-auth-sudo"]
 
 
