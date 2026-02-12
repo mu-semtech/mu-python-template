@@ -272,6 +272,32 @@ def sparql_escape(obj)
 > 
 > The `sparql_escape_uri`-function can be used for escaping URI's.
 
+### Waiting for system ready
+
+Full functionality for waiting for the system to be stable and ready (database up, triplestore ready, migrations ran, ...) is being planned as a cross-template feature, but not ready at the moment. While waiting for this functionality to arrive in the template, one can add a custom function that does a much more simplistic check like this
+
+```python
+def wait_for_triplestore():
+    triplestore_live = False
+    log("Waiting for triplestore...")
+    while not triplestore_live:
+        try:
+            result = query(
+                """
+                SELECT ?s WHERE {
+                ?s ?p ?o.
+                } LIMIT 1""",
+            )
+            if result["results"]["bindings"][0]["s"]["value"]:
+                triplestore_live = True
+            else:
+                raise Exception("triplestore not ready yet...")
+        except Exception as _e:
+            log("Triplestore not live yet, retrying...")
+            time.sleep(1)
+    log("Triplestore ready!")
+```
+
 ### Writing SPARQL Queries
 
 The template itself is unopinionated when it comes to constructing SPARQL-queries. However, since Python's most common string formatting methods aren't a great fit for SPARQL queries, we hereby want to provide an example on how to construct a query based on [template strings](https://docs.python.org/3.8/library/string.html#template-strings) while keeping things readable.
