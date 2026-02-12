@@ -191,27 +191,6 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
             log("Failed Query: \n" + the_query)
             raise e
 
-def wait_for_triplestore():
-    triplestore_live = False
-    log("Waiting for triplestore...")
-    while not triplestore_live:
-        try:
-            result = query(
-                """
-                SELECT ?s WHERE {
-                ?s ?p ?o.
-                } LIMIT 1""",
-            )
-            if result["results"]["bindings"][0]["s"]["value"]:
-                triplestore_live = True
-            else:
-                raise Exception("triplestore not ready yet...")
-        except Exception as _e:
-            log("Triplestore not live yet, retrying...")
-            time.sleep(1)
-    log("Triplestore ready!")
-
-
 def update_modified(subject, modified=datetime.datetime.now()):
     """(DEPRECATED) Executes a SPARQL query to update the modification date of the given subject URI (string).
      The default date is now."""

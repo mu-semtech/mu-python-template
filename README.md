@@ -270,13 +270,31 @@ def sparql_escape(obj)
 >
 > The `sparql_escape_uri`-function can be used for escaping URI's.
 
-#### `wait_for_triplestore`
+### Waiting for system ready
+
+Full functionality for waiting for the system to be stable and ready (database up, triplestore ready, migrations ran, ...) is being planned as a cross-template feature, but not ready at the moment. While waiting for this functionality to arrive in the template, one can add a custom function that does a much more simplistic check like this
 
 ```python
-def wait_for_triplestore()
+def wait_for_triplestore():
+    triplestore_live = False
+    log("Waiting for triplestore...")
+    while not triplestore_live:
+        try:
+            result = query(
+                """
+                SELECT ?s WHERE {
+                ?s ?p ?o.
+                } LIMIT 1""",
+            )
+            if result["results"]["bindings"][0]["s"]["value"]:
+                triplestore_live = True
+            else:
+                raise Exception("triplestore not ready yet...")
+        except Exception as _e:
+            log("Triplestore not live yet, retrying...")
+            time.sleep(1)
+    log("Triplestore ready!")
 ```
-
-> Wait until the triplestore is running. Performs a sudo select query with limit 1 until it gets a proper result from the triplestore
 
 ### Writing SPARQL Queries
 
