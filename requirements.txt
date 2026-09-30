@@ -1,3 +1,5 @@
-flask
-SPARQLWrapper
-rdflib
+flask>=3.1
+SPARQLWrapper>=2.0
+rdflib>=7.1
+gunicorn>=23.0
+uvicorn-worker>=0.4

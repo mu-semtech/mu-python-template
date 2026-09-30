@@ -327,12 +327,12 @@ my-python:
 
 The string "true", ignoring casing, is considered `True`.  All other values are considered `False`.
 
-#### Meinheld Gunicorn Docker Variables
-Since this template is based on the meinheld-gunicorn-docker image, all possible environment config for that image is also available for the template. See [meinheld-gunicorn-docker#environment-variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) for more info. The template configures `WEB_CONCURRENCY` in particular to `1` by default.
+#### Gunicorn configuration
+The service runs with [Gunicorn](https://gunicorn.org/) using [Uvicorn](https://www.uvicorn.org/) workers. The number of worker processes is configured via `WEB_CONCURRENCY` (default `1` in this template). See `gunicorn_conf.py` for other supported environment variables (`HOST`, `PORT`, `BIND`, `LOG_LEVEL`).
 
 ### Production
 
-For hosting the app in a production setting, the template depends on [meinheld-gunicorn-docker](https://github.com/tiangolo/meinheld-gunicorn-docker). All [environment variables](https://github.com/tiangolo/meinheld-gunicorn-docker#environment-variables) used by meinheld-gunicorn can be used to configure your service as well.
+For hosting the app in a production setting, the template runs a Gunicorn server with Uvicorn workers, configured via the environment variables described above (see also `gunicorn_conf.py`).
 
 ## Other
 

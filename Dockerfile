@@ -1,15 +1,19 @@
-FROM tiangolo/meinheld-gunicorn:python3.8
+FROM python:3.13-slim
 LABEL maintainer="team@semantic.works"
 
+# Don't write bytecode for cleaner mounts
+ENV PYTHONDONTWRITEBYTECODE=1
+# Print output immediately
+ENV PYTHONUNBUFFERED=1
+
 # Gunicorn Docker config
-ENV MODULE_NAME web
 ENV PYTHONPATH "/usr/src/app:/app"
 ENV WEB_CONCURRENCY "1"
 
-# Overrides the start.sh used in `tiangolo/meinheld-gunicorn`
 COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
 
+COPY ./gunicorn_conf.py /gunicorn_conf.py
 
 # Template config
 ENV APP_ENTRYPOINT web
@@ -34,3 +38,5 @@ ONBUILD RUN cd /app/ \
 
 ONBUILD ADD . /app/
 ONBUILD RUN touch /app/__init__.py
+
+CMD ["/start.sh"]
