@@ -1,3 +1,4 @@
+import copy
 import uuid
 import datetime
 import logging
@@ -154,6 +155,8 @@ def build_sparql_update():
         sparql_update.setTimeout(timeout)
     return sparql_update
 
+# Shared instances holding the connection configuration. `query` and `update` execute on a copy,
+# so changes made to these by a service (e.g. a timeout or custom headers) still apply to every query.
 sparqlQuery = build_sparql_query()
 sparqlUpdate = build_sparql_update()
 
@@ -176,21 +179,17 @@ def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
             sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
         else:
             raise BaseHTTPException(403, "tried to execute sudo query without explicit permission on container level")
-    elif "mu-auth-sudo" in sparql_interface.customHttpHeaders:
-        del sparql_interface.customHttpHeaders["mu-auth-sudo"]
 
     if scope:
         sparql_interface.customHttpHeaders["mu-auth-scope"] = scope
     elif DEFAULT_MU_AUTH_SCOPE:
         sparql_interface.customHttpHeaders["mu-auth-scope"] = DEFAULT_MU_AUTH_SCOPE
-    elif "mu-auth_scope" in sparql_interface.customHttpHeaders:
-        del sparql_interface.customHttpHeaders["mu-auth-scope"]
 
 
 def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
     """Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default)."""
-    # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
-    sparql_interface = build_sparql_query()
+    # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better use a copy
+    sparql_interface = copy.deepcopy(sparqlQuery)
 
     set_sparql_interface_headers(sparql_interface, sudo=sudo, scope=scope)
 
@@ -206,8 +205,8 @@ def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
 
 def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
     """Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens."""
-    # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better create a new instance
-    sparql_interface = build_sparql_update()
+    # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better use a copy
+    sparql_interface = copy.deepcopy(sparqlUpdate)
 
     set_sparql_interface_headers(sparql_interface, sudo=sudo, scope=scope)
 
