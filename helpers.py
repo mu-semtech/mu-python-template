@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 from flask import jsonify, request, has_request_context
-from werkzeug.exceptions import Forbidden
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -72,12 +71,38 @@ def log(msg, *args, **kwargs):
     """
     return logger.info(msg, *args, **kwargs)
 
+class BaseHTTPException(Exception):
+    """
+    Exception resulting in a JSONAPI compliant error response with the given status code (400 by default).
+
+    Raise it from anywhere in a request handler instead of returning `error(...)`. The template registers an
+    error handler that turns it into a response.
+    The keyword arguments are the members of JSONAPI error objects: https://jsonapi.org/format/#error-objects
+    """
+    def __init__(self, status_code=400, detail=None, headers=None, id=None, links=None,
+                 code=None, title=None, source=None, meta=None):
+        super().__init__(detail)
+        self.status_code = status_code
+        self.detail = detail
+        self.headers = headers
+        self.error_members = {key: value for key, value in dict(
+            id=id, links=links, code=code, title=title, source=source, meta=meta
+        ).items() if value is not None}
+
+    def to_response(self):
+        response = error(self.detail, self.status_code, **self.error_members)
+        response.headers.update(self.headers or {})
+        return response
+
+
 def error(msg, status=400, **kwargs):
     """
     Returns a Response object containing a JSONAPI compliant error response with the given status code (400 by default).
 
     Response object documentation: https://flask.palletsprojects.com/en/1.1.x/api/#response-objects
     The kwargs can be any other key supported by JSONAPI error objects: https://jsonapi.org/format/#error-objects
+
+    Alternatively, raise a `BaseHTTPException` to abort request handling with an error response.
     """
     error_obj = kwargs
     error_obj["detail"] = msg
@@ -150,7 +175,7 @@ def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
         if ALLOW_MU_AUTH_SUDO:
             sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
         else:
-            raise Forbidden("tried to execute sudo query without explicit permission on container level")
+            raise BaseHTTPException(403, "tried to execute sudo query without explicit permission on container level")
     elif "mu-auth-sudo" in sparql_interface.customHttpHeaders:
         del sparql_interface.customHttpHeaders["mu-auth-sudo"]
 

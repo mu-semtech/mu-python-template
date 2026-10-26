@@ -6,10 +6,17 @@ import flask
 from rdflib.namespace import Namespace
 
 import helpers
+from helpers import BaseHTTPException
 from escape_helpers import sparql_escape
 
 # WSGI variable name used by the server
 app = flask.Flask(__name__)
+
+
+@app.errorhandler(BaseHTTPException)
+def handle_base_http_exception(exc):
+    return exc.to_response()
+
 
 ##################
 ## Vocabularies ##
@@ -23,6 +30,7 @@ SERVICE_RESOURCE_BASE = 'http://mu.semte.ch/services/'
 builtins.app = app
 builtins.helpers = helpers
 builtins.sparql_escape = sparql_escape
+builtins.BaseHTTPException = BaseHTTPException
 
 # Import the app from the service consuming the template
 app_file = os.environ.get('APP_ENTRYPOINT')
