@@ -1,6 +1,8 @@
 import os
 from importlib import import_module
 import builtins
+import threading
+import warnings
 
 import flask
 from rdflib.namespace import Namespace
@@ -17,6 +19,25 @@ app = flask.Flask(__name__)
 def handle_base_http_exception(exc):
     return exc.to_response()
 
+
+# Flask 2.3 removed before_first_request, kept for services written against older template versions
+if not hasattr(app, 'before_first_request'):
+    def before_first_request(f):
+        warnings.warn("app.before_first_request is deprecated, run startup code at import time of your web.py instead",
+                      DeprecationWarning, stacklevel=2)
+        lock = threading.Lock()
+        done = False
+
+        @app.before_request
+        def run_once():
+            nonlocal done
+            if not done:
+                with lock:
+                    if not done:
+                        f()
+                        done = True
+        return f
+    app.before_first_request = before_first_request
 
 ##################
 ## Vocabularies ##
