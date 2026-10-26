@@ -129,14 +129,15 @@ def rewrite_url_header(request):
 
 def validate_json_api_content_type(request):
     """Validate whether the request contains the JSONAPI content-type header (application/vnd.api+json). Returns a 404 otherwise"""
-    if "application/vnd.api+json" not in request.content_type:
+    content_type = request.content_type or ""
+    if "application/vnd.api+json" not in content_type:
         return error("Content-Type must be application/vnd.api+json instead of " +
-                     request.content_type)
+                     content_type)
 
 
 def validate_resource_type(expected_type, data):
     """Validate whether the type specified in the JSON data is equal to the expected type. Returns a `409` otherwise."""
-    if data['type'] is not expected_type:
+    if data['type'] != expected_type:
         return error("Incorrect type. Type must be " + str(expected_type) +
                      ", instead of " + str(data['type']) + ".", 409)
 
@@ -221,9 +222,11 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
             raise e
 
 
-def update_modified(subject, modified=datetime.datetime.now()):
+def update_modified(subject, modified=None):
     """(DEPRECATED) Executes a SPARQL query to update the modification date of the given subject URI (string).
      The default date is now."""
+    if modified is None:
+        modified = datetime.datetime.now()
     query = " WITH <%s> " % MU_APPLICATION_GRAPH
     query += " DELETE {"
     query += "   < %s > < %s > %s ." % (subject, DC.Modified, sparql_escape(modified))
