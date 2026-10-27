@@ -36,14 +36,9 @@ log_levels = {
     'ERROR': logging.ERROR,
     'CRITICAL': logging.CRITICAL
 }
-log_dir = os.getenv('LOG_DIR', '/logs')
-if not os.path.exists(log_dir): os.makedirs(log_dir)
 logger = logging.getLogger('MU_PYTHON_TEMPLATE_LOGGER')
 logger.setLevel(log_levels.get(os.environ.get('LOG_LEVEL').upper()))
-fileHandler = logging.FileHandler("{0}/{1}.log".format(log_dir, 'logs'))
-logger.addHandler(fileHandler)
-consoleHandler = logging.StreamHandler(stream=sys.stdout)# or stderr?
-logger.addHandler(consoleHandler)
+logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
 LOG_SPARQL_ALL_VAR = os.environ.get('LOG_SPARQL_ALL')
 LOG_SPARQL_QUERIES = os.environ.get(
@@ -62,10 +57,10 @@ def generate_uuid():
 
 def log(msg, *args, **kwargs):
     """
-    Write a log message to the log file.
+    Write a log message.
 
     Works exactly the same as the logging.info (https://docs.python.org/3/library/logging.html#logging.info) method from pythons' logging module.
-    Logs are written to the directory configured by `LOG_DIR` (/logs by default) in the docker container.
+    Logs are written to stdout of the container (e.g. visible via `docker logs`).
 
     Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects)
     used by the template. The methods provided by this instance can be used for more fine-grained logging.

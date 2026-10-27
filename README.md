@@ -77,10 +77,10 @@ def generate_uuid()
 def log(msg, *args, **kwargs)
 ```
 
-> Write a log message to the log file.
+> Write a log message.
 > 
 > Works exactly the same as the logging.info (https://docs.python.org/3/library/logging.html#logging.info) method from pythons' logging module.
-> Logs are written to the directory configured by `LOG_DIR` (/logs by default) in the docker container.
+> Logs are written to stdout of the container (e.g. visible via `docker logs`).
 > 
 > Note that the `helpers` module also exposes `logger`, which is the logger instance (https://docs.python.org/3/library/logging.html#logger-objects) 
 > used by the template. The methods provided by this instance can be used for more fine-grained logging.
@@ -388,8 +388,6 @@ my-python:
 
 - `MU_SPARQL_TIMEOUT` is used to configure the timeout (in seconds) for SPARQL queries.
 
-- `LOG_DIR` the directory log files are written to. Defaults to `/logs`.
-
 #### mu-authorization
 - `ALLOW_MU_AUTH_SUDO`: allow queries with `sudo=True`, which bypass the access rights of the user making the request. Accepts `true`/`True`/`yes`. Defaults to not allowed.
 
@@ -423,6 +421,7 @@ In regular Flask applications (e.g. those not run within this template) you are 
 - The meinheld server was replaced by gunicorn with Uvicorn workers, see [Gunicorn configuration](#gunicorn-configuration).
 - The base image is `python:3.13-slim` instead of the full python image. gcc and g++ are available, other system libraries can be installed with a [`build.sh`](#dependencies).
 - `query` and `update` execute on a copy of `helpers.sparqlQuery` and `helpers.sparqlUpdate`, making them thread-safe. Configuration set on those objects (e.g. a timeout or custom headers) still applies to every query.
+- Logs are written to stdout only. Services relying on log files in `/logs` should read `docker logs` (or ship stdout) instead.
 
 ### readme.py
 To simplify documenting the helper functions, `README.py` can be used to import & render the docstrings into README.md.
