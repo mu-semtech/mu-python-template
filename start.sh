@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 set -eu
 if [ "${MODE}" == "development" ]; then
-    if [ -f /app/requirements.txt ]; then pip install -r /app/requirements.txt; fi
+    if [ -f /app/requirements.txt ]; then uv pip install --system -r /app/requirements.txt; fi
     if [ "${DEV_SERVER:-flask}" == "gunicorn" ]; then
         exec gunicorn --reload -k gunicorn_worker.UvicornWSGIWorker -c /gunicorn_conf.py web:app
     else

@@ -29,18 +29,20 @@ RUN apt-get update \
      && apt-get install -y --no-install-recommends gcc g++ \
      && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install --no-cache-dir uv==0.13.6
+
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 ADD . /usr/src/app
 
 RUN ln -s /app /usr/src/app/ext \
      && cd /usr/src/app \
-     && pip3 install -r requirements.txt
+     && uv pip install --system --no-cache -r requirements.txt
 
 ONBUILD ADD Dockerfile requirement[s].txt on-build.sh* /app/
 ONBUILD RUN cd /app/ \
     && if [ -f on-build.sh ]; then chmod +x on-build.sh && ./on-build.sh; fi \
-    && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    && if [ -f requirements.txt ]; then uv pip install --system --no-cache -r requirements.txt; fi
 
 ONBUILD ADD . /app/
 ONBUILD RUN touch /app/__init__.py
