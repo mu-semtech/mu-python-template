@@ -4,7 +4,7 @@ import datetime
 import logging
 import os
 import sys
-from flask import jsonify, request, has_request_context
+from flask import jsonify, request, has_request_context, g
 from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -163,6 +163,9 @@ MU_HEADERS = [
     "MU-AUTH-USED-GROUPS"
 ]
 
+MU_AUTH_ALLOWED_GROUPS = 'mu-auth-allowed-groups'
+MU_AUTH_USED_GROUPS = 'mu-auth-used-groups'
+
 def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
     for header in MU_HEADERS:
         if has_request_context() and header in request.headers:
@@ -170,6 +173,12 @@ def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
         else: # Make sure headers used for a previous query are cleared
             if header in sparql_interface.customHttpHeaders:
                 del sparql_interface.customHttpHeaders[header]
+    # Groups which were already resolved by an earlier query in this request take precedence,
+    # so mu-authorization does not have to recompute them on every SPARQL call
+    if has_request_context():
+        resolved_groups = getattr(g, 'mu_auth_allowed_groups', None)
+        if resolved_groups is not None:
+            sparql_interface.customHttpHeaders["MU-AUTH-ALLOWED-GROUPS"] = resolved_groups
     if sudo:
         if ALLOW_MU_AUTH_SUDO:
             sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
@@ -180,6 +189,19 @@ def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
         sparql_interface.customHttpHeaders["mu-auth-scope"] = scope
     elif DEFAULT_MU_AUTH_SCOPE:
         sparql_interface.customHttpHeaders["mu-auth-scope"] = DEFAULT_MU_AUTH_SCOPE
+
+
+def store_mu_auth_response_headers(query_result):
+    """Store the mu-auth headers of the SPARQL response, so the template can forward them to the client
+    and use the resolved groups for subsequent queries in this request. The last query wins."""
+    if not has_request_context():
+        return
+    response = getattr(query_result, 'response', None)
+    headers = getattr(response, 'headers', None)
+    if headers is None:
+        return
+    g.mu_auth_allowed_groups = headers.get(MU_AUTH_ALLOWED_GROUPS)
+    g.mu_auth_used_groups = headers.get(MU_AUTH_USED_GROUPS)
 
 
 def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
@@ -199,7 +221,9 @@ def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
     if LOG_SPARQL_QUERIES:
         log("Execute query: \n" + the_query)
     try:
-        return sparql_interface.query().convert()
+        query_result = sparql_interface.query()
+        store_mu_auth_response_headers(query_result)
+        return query_result.convert()
     except Exception as e:
         log("Failed Query: \n" + the_query)
         raise e
@@ -223,7 +247,8 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
         if LOG_SPARQL_UPDATES:
             log("Execute query: \n" + the_query)
         try:
-            sparql_interface.query()
+            query_result = sparql_interface.query()
+            store_mu_auth_response_headers(query_result)
         except Exception as e:
             log("Failed Query: \n" + the_query)
             raise e
