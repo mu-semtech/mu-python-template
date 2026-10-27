@@ -38,7 +38,7 @@ curl localhost:8080/hello
 
 If your service needs external libraries other than the ones already provided by the template (Flask, SPARQLWrapper and rdflib), you can specify those in a [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)-file. The template will take care of installing them when you build your Docker image and when you boot the template in development mode for the first time.
 
-Some python dependencies depend on C/C++ libraries which are not present in the image (e.g. libgeos for a package such as shapely). To install those, add a `build.sh` file to your service. It is executed before the python dependencies are installed. E.g.:
+Some python dependencies depend on C/C++ libraries which are not present in the image (e.g. libgeos for a package such as shapely). To install those, add an `on-build.sh` file to your service, in line with the `on-build.sh` support of the mu-javascript-template and mu-ruby-template. It is executed before the python dependencies are installed. E.g.:
 ```bash
 #!/bin/sh
 apt-get update && apt-get install -y libgeos-dev
@@ -419,7 +419,7 @@ In regular Flask applications (e.g. those not run within this template) you are 
 ### Upgrading from earlier versions
 - The template is based on Python 3.13 (was 3.8) and recent versions of Flask, rdflib and SPARQLWrapper. Pinned dependencies of your service might need an update.
 - The meinheld server was replaced by gunicorn with Uvicorn workers, see [Gunicorn configuration](#gunicorn-configuration).
-- The base image is `python:3.13-slim` instead of the full python image. gcc and g++ are available, other system libraries can be installed with a [`build.sh`](#dependencies).
+- The base image is `python:3.13-slim` instead of the full python image. gcc and g++ are available, other system libraries can be installed with an [`on-build.sh`](#dependencies).
 - `query` and `update` execute on a copy of `helpers.sparqlQuery` and `helpers.sparqlUpdate`, making them thread-safe. Configuration set on those objects (e.g. a timeout or custom headers) still applies to every query.
 - Logs are written to stdout only. Services relying on log files in `/logs` should read `docker logs` (or ship stdout) instead.
 
