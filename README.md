@@ -165,7 +165,7 @@ def query(the_query: str, *, sudo: bool = False, scope: str | None = None)
 > Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default).
 > 
 > Advanced options:
-> - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true` (or `True` or `yes`)
+> - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive)
 > - scope: a scope string to use when executing this query. If left as None, the default scope of `DEFAULT_MU_AUTH_SCOPE` is used if any. Otherwise, no scope is used in the query
 
 <a id="helpers.update"></a>
@@ -179,7 +179,7 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None)
 > Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens.
 > 
 > Advanced options:
-> - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true` (or `True` or `yes`)
+> - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive)
 > - scope: a scope string to use when executing this query. If left as None, the default scope of `DEFAULT_MU_AUTH_SCOPE` is used if any. Otherwise, no scope is used in the query
 
 <a id="helpers.update_modified"></a>
@@ -389,7 +389,7 @@ my-python:
 - `MU_SPARQL_TIMEOUT` is used to configure the timeout (in seconds) for SPARQL queries.
 
 #### mu-authorization
-- `ALLOW_MU_AUTH_SUDO`: allow queries with `sudo=True`, which bypass the access rights of the user making the request. Accepts `true`/`True`/`yes`. Defaults to not allowed.
+- `ALLOW_MU_AUTH_SUDO`: allow queries with `sudo=True`, which bypass the access rights of the user making the request. Accepts `true`, `yes` or `1` (case-insensitive). Defaults to not allowed.
 
 - `DEFAULT_MU_AUTH_SCOPE`: the scope used for queries which don't provide their own `scope`. Defaults to no scope.
 
