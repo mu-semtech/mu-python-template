@@ -231,7 +231,7 @@ def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
 
 def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
     """
-    Execute the given update SPARQL query on the triplestore. If the given query is not an update query, nothing happens.
+    Execute the given update SPARQL query on the triplestore and returns the result as a SPARQLWrapper `QueryResult`. If the given query is not an update query, nothing happens and `None` is returned.
 
     Advanced options:
     - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive)
@@ -249,6 +249,7 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
         try:
             query_result = sparql_interface.query()
             store_mu_auth_response_headers(query_result)
+            return query_result
         except Exception as e:
             log("Failed Query: \n" + the_query)
             raise
