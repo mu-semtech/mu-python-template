@@ -150,7 +150,8 @@ def rewrite_url_header(request)
 def validate_json_api_content_type(request)
 ```
 
-> Validate whether the request contains the JSONAPI content-type header (application/vnd.api+json). Returns a 404 otherwise
+> Validate whether the request contains the JSONAPI content-type header (application/vnd.api+json).
+> Raises a `BaseHTTPException` resulting in a `400` response otherwise.
 
 <a id="helpers.validate_resource_type"></a>
 
@@ -160,7 +161,8 @@ def validate_json_api_content_type(request)
 def validate_resource_type(expected_type, data)
 ```
 
-> Validate whether the type specified in the JSON data is equal to the expected type. Returns a `409` otherwise.
+> Validate whether the type specified in the JSON data is equal to the expected type.
+> Raises a `BaseHTTPException` resulting in a `409` response otherwise.
 
 <a id="helpers.query"></a>
 
@@ -423,6 +425,7 @@ In regular Flask applications (e.g. those not run within this template) you are 
 - The base image is `python:3.13-slim` instead of the full python image. gcc and g++ are available, other system libraries can be installed with an [`on-build.sh`](#dependencies).
 - `query` and `update` execute on a copy of `helpers.sparqlQuery` and `helpers.sparqlUpdate`, making them thread-safe. Configuration set on those objects (e.g. a timeout or custom headers) still applies to every query.
 - The deprecated `update_modified` helper was removed.
+- `validate_json_api_content_type` and `validate_resource_type` raise a `BaseHTTPException` instead of returning an error response. Services returning the result of a failed validation keep working, services inspecting the returned response need to catch the exception instead.
 - Logs are written to stdout only. Services relying on log files in `/logs` should read `docker logs` (or ship stdout) instead.
 
 ### readme.py

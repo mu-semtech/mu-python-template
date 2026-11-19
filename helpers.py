@@ -124,18 +124,20 @@ def rewrite_url_header(request):
 
 
 def validate_json_api_content_type(request):
-    """Validate whether the request contains the JSONAPI content-type header (application/vnd.api+json). Returns a 404 otherwise"""
+    """Validate whether the request contains the JSONAPI content-type header (application/vnd.api+json).
+    Raises a `BaseHTTPException` resulting in a `400` response otherwise."""
     content_type = request.content_type or ""
     if "application/vnd.api+json" not in content_type:
-        return error("Content-Type must be application/vnd.api+json instead of " +
-                     content_type)
+        raise BaseHTTPException(400, "Content-Type must be application/vnd.api+json instead of " + content_type)
 
 
 def validate_resource_type(expected_type, data):
-    """Validate whether the type specified in the JSON data is equal to the expected type. Returns a `409` otherwise."""
-    if data['type'] != expected_type:
-        return error("Incorrect type. Type must be " + str(expected_type) +
-                     ", instead of " + str(data['type']) + ".", 409)
+    """Validate whether the type specified in the JSON data is equal to the expected type.
+    Raises a `BaseHTTPException` resulting in a `409` response otherwise."""
+    if data.get('type') != expected_type:
+        raise BaseHTTPException(409, "Incorrect type. Type must be " + str(expected_type) +
+                                ", instead of " + str(data.get('type')) + ".")
+
 
 def build_sparql_query():
     sparql_query = SPARQLWrapper(os.environ.get('MU_SPARQL_ENDPOINT'), returnFormat=JSON)
