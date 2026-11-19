@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import re
 from warnings import warn
 
@@ -59,6 +60,17 @@ def sparql_escape_float(obj):
         obj = str(float(obj))
     return '"{}"^^xsd:float'.format(obj)
 
+def sparql_escape_decimal(obj):
+    """Converts the given decimal to a SPARQL-safe RDF object string with the right RDF-datatype. """
+    if not isinstance(obj, decimal.Decimal):
+        warn("You are escaping something that isn't a decimal with \
+        the 'sparql_escape_decimal'-method. Implicit casting will occurr.")
+        obj = decimal.Decimal(str(obj))
+    if not obj.is_finite():
+        raise ValueError("Cannot escape {} as xsd:decimal".format(obj))
+    # fixed-point notation, xsd:decimal does not allow an exponent (e.g. 1E+2)
+    return '"{}"^^xsd:decimal'.format(format(obj, 'f'))
+
 def sparql_escape_bool(obj):
     """Converts the given bool to a SPARQL-safe RDF object string with the right RDF-datatype. """
     if not isinstance(obj, bool):
@@ -83,6 +95,7 @@ def sparql_escape(obj):
     - `str`
     - `int`
     - `float`
+    - `decimal.Decimal`
     - `datetime.datetime`
     - `datetime.date`
     - `datetime.time`
@@ -102,6 +115,8 @@ def sparql_escape(obj):
         escaped_val = sparql_escape_int(obj)
     elif isinstance(obj, float):
         escaped_val = sparql_escape_float(obj)
+    elif isinstance(obj, decimal.Decimal):
+        escaped_val = sparql_escape_decimal(obj)
     elif isinstance(obj, bool):
         escaped_val = sparql_escape_bool(obj)
     else:

@@ -252,6 +252,16 @@ def sparql_escape_float(obj)
 
 > Converts the given float to a SPARQL-safe RDF object string with the right RDF-datatype.
 
+<a id="escape_helpers.sparql_escape_decimal"></a>
+
+#### `sparql_escape_decimal`
+
+```python
+def sparql_escape_decimal(obj)
+```
+
+> Converts the given decimal to a SPARQL-safe RDF object string with the right RDF-datatype.
+
 <a id="escape_helpers.sparql_escape_bool"></a>
 
 #### `sparql_escape_bool`
@@ -289,6 +299,7 @@ def sparql_escape(obj)
 > - `str`
 > - `int`
 > - `float`
+> - `decimal.Decimal`
 > - `datetime.datetime`
 > - `datetime.date`
 > - `datetime.time`
