@@ -1,11 +1,9 @@
 import copy
 import uuid
-import datetime
 import logging
 import os
 import sys
 from flask import jsonify, request, has_request_context, g
-from rdflib.namespace import DC
 from escape_helpers import sparql_escape
 from SPARQLWrapper import SPARQLWrapper, JSON
 
@@ -257,24 +255,3 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
             log("Failed Query: \n" + the_query)
             raise
 
-
-def update_modified(subject, modified=None):
-    """(DEPRECATED) Executes a SPARQL query to update the modification date of the given subject URI (string).
-     The default date is now."""
-    if modified is None:
-        modified = datetime.datetime.now()
-    query = " WITH <%s> " % MU_APPLICATION_GRAPH
-    query += " DELETE {"
-    query += "   < %s > < %s > %s ." % (subject, DC.Modified, sparql_escape(modified))
-    query += " }"
-    query += " WHERE {"
-    query += "   <%s> <%s> %s ." % (subject, DC.Modified, sparql_escape(modified))
-    query += " }"
-    update(query)
-
-    query = " INSERT DATA {"
-    query += "   GRAPH <%s> {" % MU_APPLICATION_GRAPH
-    query += "     <%s> <%s> %s ." % (subject, DC.Modified, sparql_escape(modified))
-    query += "   }"
-    query += " }"
-    update(query)

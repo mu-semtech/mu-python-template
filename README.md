@@ -190,17 +190,6 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None)
 > - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive)
 > - scope: a scope string to use when executing this query. If left as None, the default scope of `DEFAULT_MU_AUTH_SCOPE` is used if any. Otherwise, no scope is used in the query
 
-<a id="helpers.update_modified"></a>
-
-#### `update_modified`
-
-```python
-def update_modified(subject, modified=None)
-```
-
-> (DEPRECATED) Executes a SPARQL query to update the modification date of the given subject URI (string).
-> The default date is now.
-
 <a id="escape_helpers.sparql_escape_string"></a>
 
 #### `sparql_escape_string`
@@ -433,6 +422,7 @@ In regular Flask applications (e.g. those not run within this template) you are 
 - The meinheld server was replaced by gunicorn with Uvicorn workers, see [Gunicorn configuration](#gunicorn-configuration).
 - The base image is `python:3.13-slim` instead of the full python image. gcc and g++ are available, other system libraries can be installed with an [`on-build.sh`](#dependencies).
 - `query` and `update` execute on a copy of `helpers.sparqlQuery` and `helpers.sparqlUpdate`, making them thread-safe. Configuration set on those objects (e.g. a timeout or custom headers) still applies to every query.
+- The deprecated `update_modified` helper was removed.
 - Logs are written to stdout only. Services relying on log files in `/logs` should read `docker logs` (or ship stdout) instead.
 
 ### readme.py
