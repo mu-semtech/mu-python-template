@@ -58,6 +58,14 @@ example docker-compose parameters:
 
 By default, development mode runs Flask's development server, which shows an interactive debugger on errors. Set `DEV_SERVER` to `gunicorn` to run the production server with live-reloading instead, e.g. to test behaviour with multiple workers or threads.
 
+### Imports
+For backwards compatibility, `helpers` and `sparql_escape` are available in your code without an import. We recommend importing what you use explicitly, so linters, type checkers and readers know where it comes from:
+```python
+from helpers import query, update, log
+from escape_helpers import sparql_escape_uri, sparql_escape_string
+```
+Using `helpers` or `sparql_escape` without an import is deprecated and logs a warning (once per helper, see `PRINT_DEPRECATION_WARNINGS`). They may be removed in a future major version.
+
 ### Helper methods
 <a id="helpers.generate_uuid"></a>
 
@@ -299,8 +307,10 @@ def sparql_escape(obj)
 
 ### Error handling
 
-A request handler can return a JSONAPI error response built with `error(...)`, or raise a `BaseHTTPException` (available without an import, like `app`). The template turns the exception into the same JSONAPI error response.
+A request handler can return a JSONAPI error response built with `error(...)`, or raise a `BaseHTTPException`. The template turns the exception into the same JSONAPI error response.
 ```python
+from helpers import BaseHTTPException
+
 @app.route("/hello/<name>")
 def hello(name):
     if name == "world":
@@ -387,6 +397,8 @@ my-python:
 
 
 - `MU_SPARQL_TIMEOUT` is used to configure the timeout (in seconds) for SPARQL queries.
+
+- `PRINT_DEPRECATION_WARNINGS`: log a warning the first time a deprecated feature is used. Accepts `true`, `yes` or `1` (case-insensitive). Defaults to `true`.
 
 #### mu-authorization
 - `ALLOW_MU_AUTH_SUDO`: allow queries with `sudo=True`, which bypass the access rights of the user making the request. Accepts `true`, `yes` or `1` (case-insensitive). Defaults to not allowed.
