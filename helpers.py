@@ -37,8 +37,11 @@ log_levels = {
     'CRITICAL': logging.CRITICAL
 }
 logger = logging.getLogger('MU_PYTHON_TEMPLATE_LOGGER')
-logger.setLevel(log_levels.get(os.environ.get('LOG_LEVEL').upper()))
 logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+log_level = (os.environ.get('LOG_LEVEL') or 'info').upper()
+if log_level not in log_levels:
+    raise ValueError(f"Invalid LOG_LEVEL '{log_level}', expected one of {', '.join(log_levels)}")
+logger.setLevel(log_levels[log_level])
 
 LOG_SPARQL_ALL_VAR = os.environ.get('LOG_SPARQL_ALL')
 LOG_SPARQL_QUERIES = os.environ.get(
