@@ -226,7 +226,7 @@ def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
         return query_result.convert()
     except Exception as e:
         log("Failed Query: \n" + the_query)
-        raise e
+        raise
 
 
 def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
@@ -251,7 +251,7 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
             store_mu_auth_response_headers(query_result)
         except Exception as e:
             log("Failed Query: \n" + the_query)
-            raise e
+            raise
 
 
 def update_modified(subject, modified=None):
