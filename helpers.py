@@ -184,7 +184,7 @@ def set_sparql_interface_headers(sparql_interface, sudo=False, scope=None):
         if ALLOW_MU_AUTH_SUDO:
             sparql_interface.customHttpHeaders["mu-auth-sudo"] = "true"
         else:
-            raise BaseHTTPException(403, "tried to execute sudo query without explicit permission on container level")
+            raise RuntimeError("sudo query requested but ALLOW_MU_AUTH_SUDO is not set")
 
     if scope:
         sparql_interface.customHttpHeaders["mu-auth-scope"] = scope
@@ -210,7 +210,7 @@ def query(the_query: str, *, sudo: bool = False, scope: str | None = None):
     Execute the given SPARQL query (select/ask/construct) on the triplestore and returns the results in the given return Format (JSON by default).
 
     Advanced options:
-    - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive)
+    - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive), raises a `RuntimeError` otherwise
     - scope: a scope string to use when executing this query. If left as None, the default scope of `DEFAULT_MU_AUTH_SCOPE` is used if any. Otherwise, no scope is used in the query
     """
     # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better use a copy
@@ -235,7 +235,7 @@ def update(the_query: str, *, sudo: bool = False, scope: str | None = None):
     Execute the given update SPARQL query on the triplestore and returns the result as a SPARQLWrapper `QueryResult`. If the given query is not an update query, nothing happens and `None` is returned.
 
     Advanced options:
-    - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive)
+    - sudo: perform a sudo query, ignoring the groups of the originating request. Only allowed if the environment variable `ALLOW_MU_AUTH_SUDO` is set to `true`, `yes` or `1` (case-insensitive), raises a `RuntimeError` otherwise
     - scope: a scope string to use when executing this query. If left as None, the default scope of `DEFAULT_MU_AUTH_SCOPE` is used if any. Otherwise, no scope is used in the query
     """
     # we're editing properties of sparql_interface, if this is done by multiple worker threads, the behavior is undefined, better use a copy
