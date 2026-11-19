@@ -25,7 +25,7 @@ Available functions:
 """
 
 MU_APPLICATION_GRAPH = os.environ.get('MU_APPLICATION_GRAPH')
-ALLOW_MU_AUTH_SUDO = os.environ.get("ALLOW_MU_AUTH_SUDO") in ['true', 'True', 'yes']
+ALLOW_MU_AUTH_SUDO = (os.environ.get("ALLOW_MU_AUTH_SUDO") or "").lower() in ("true", "yes", "1")
 DEFAULT_MU_AUTH_SCOPE = os.environ.get("DEFAULT_MU_AUTH_SCOPE")
 
 # TODO: Figure out how logging works when production uses multiple workers
