@@ -111,14 +111,14 @@ def sparql_escape(obj):
         escaped_val = sparql_escape_date(obj)
     elif isinstance(obj, datetime.time):
         escaped_val = sparql_escape_time(obj)
+    elif isinstance(obj, bool):  # before int, as bool is a subclass of int
+        escaped_val = sparql_escape_bool(obj)
     elif isinstance(obj, int):
         escaped_val = sparql_escape_int(obj)
     elif isinstance(obj, float):
         escaped_val = sparql_escape_float(obj)
     elif isinstance(obj, decimal.Decimal):
         escaped_val = sparql_escape_decimal(obj)
-    elif isinstance(obj, bool):
-        escaped_val = sparql_escape_bool(obj)
     else:
         warn("Unknown escape type '{}'. Escaping as string".format(type(obj)))
         escaped_val = sparql_escape_string(obj)
