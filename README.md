@@ -417,13 +417,13 @@ my-python:
 The string "true", ignoring casing, is considered `True`.  All other values are considered `False`.
 
 #### Gunicorn configuration
-The service runs with [Gunicorn](https://gunicorn.org/) using [Uvicorn](https://www.uvicorn.org/) workers. The number of worker processes is configured via `WEB_CONCURRENCY` (default `1` in this template). See `gunicorn_conf.py` for other supported environment variables (`HOST`, `PORT`, `BIND`, `LOG_LEVEL`).
+The service runs with [Gunicorn](https://gunicorn.org/) using its threaded (`gthread`) workers. The number of worker processes is configured via `WEB_CONCURRENCY` (default `1` in this template). See `gunicorn_conf.py` for other supported environment variables (`HOST`, `PORT`, `BIND`, `LOG_LEVEL`).
 
 Each worker handles one request at a time, like earlier versions of the template. Other [gunicorn settings](https://docs.gunicorn.org/en/stable/settings.html) can be passed through `GUNICORN_CMD_ARGS`, e.g. `"--threads 4"` to handle 4 requests concurrently per worker. The template helpers are thread-safe, but make sure the code of your service is before increasing this.
 
 ### Production
 
-For hosting the app in a production setting, the template runs a Gunicorn server with Uvicorn workers, configured via the environment variables described above (see also `gunicorn_conf.py`).
+For hosting the app in a production setting, the template runs a Gunicorn server with threaded (`gthread`) workers, configured via the environment variables described above (see also `gunicorn_conf.py`).
 
 ## Other
 
@@ -432,7 +432,7 @@ In regular Flask applications (e.g. those not run within this template) you are 
 
 ### Upgrading from earlier versions
 - The template is based on Python 3.13 (was 3.8) and recent versions of Flask, rdflib and SPARQLWrapper. Pinned dependencies of your service might need an update.
-- The meinheld server was replaced by gunicorn with Uvicorn workers, see [Gunicorn configuration](#gunicorn-configuration).
+- The meinheld server was replaced by gunicorn with threaded (`gthread`) workers, see [Gunicorn configuration](#gunicorn-configuration).
 - The base image is `python:3.13-slim` instead of the full python image. gcc and g++ are available, other system libraries can be installed with an [`on-build.sh`](#dependencies).
 - `query` and `update` execute on a copy of `helpers.sparqlQuery` and `helpers.sparqlUpdate`, making them thread-safe. Configuration set on those objects (e.g. a timeout or custom headers) still applies to every query.
 - The deprecated `update_modified` helper was removed.
