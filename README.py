@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     context = Context(directory=".")
     loader = PythonLoader(modules=["helpers", "escape_helpers"])
-    renderer = MarkdownRenderer(render_module_header=False, insert_header_anchors=True, code_headers=True, render_typehint_in_data_header=True, docstrings_as_blockquote=True)
+    renderer = MarkdownRenderer(render_module_header=False, insert_header_anchors=True, code_headers=True, render_typehint_in_data_header=True, docstrings_as_blockquote=True, header_level_by_type={"Module": 1, "Class": 4, "Method": 4, "Function": 4, "Variable": 4})
 
     loader.init(context)
     renderer.init(context)
